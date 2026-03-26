@@ -956,56 +956,158 @@ const SettingsTab = ({ products, storeInfo }) => {
   );
 };
 
+// --- Helper Functions ---
+const terbilang = (n) => {
+  const abjad = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas"];
+  if (n < 12) return abjad[n];
+  if (n < 20) return terbilang(n - 10) + " belas";
+  if (n < 100) return terbilang(Math.floor(n / 10)) + " puluh " + terbilang(n % 10);
+  if (n < 200) return "seratus " + terbilang(n - 100);
+  if (n < 1000) return terbilang(Math.floor(n / 100)) + " ratus " + terbilang(n % 100);
+  if (n < 2000) return "seribu " + terbilang(n - 1000);
+  if (n < 1000000) return terbilang(Math.floor(n / 1000)) + " ribu " + terbilang(n % 1000);
+  if (n < 1000000000) return terbilang(Math.floor(n / 1000000)) + " juta " + terbilang(n % 1000000);
+  return "";
+};
+
 const Receipt = ({ ticket, onBack }) => {
   const handlePrint = () => {
     window.print();
   };
 
+  const formattedTotal = ticket.total.toLocaleString('id-ID');
+  const terbilangText = terbilang(ticket.total) + " rupiah";
+
   return (
-    <div className="receipt-container fade-in" style={{ maxWidth: 400, margin: '0 auto' }}>
-      <div className="card" style={{ 
-        padding: 40, 
-        border: '1px solid #000', 
-        borderRadius: 0, 
-        boxShadow: 'none',
-        background: 'white',
-        textAlign: 'center'
-      }}>
-        <h1 style={{ marginBottom: 8 }}>{ticket.storeInfo.name}</h1>
-        <p style={{ fontSize: 12, marginBottom: 24 }}>{ticket.storeInfo.address}</p>
-        
-        <div style={{ borderTop: '1px dashed #000', borderBottom: '1px dashed #000', padding: '16px 0', marginBottom: 24, textAlign: 'left' }}>
-          <p style={{ fontSize: 13, marginBottom: 4 }}><strong>No. Trx:</strong> {ticket.id}</p>
-          <p style={{ fontSize: 13, marginBottom: 4 }}><strong>Tanggal:</strong> {ticket.date}</p>
-          <p style={{ fontSize: 13, marginBottom: 4 }}><strong>Pelanggan:</strong> {ticket.customerName}</p>
-          <p style={{ fontSize: 13, marginBottom: 4 }}><strong>HP:</strong> {ticket.customerPhone}</p>
-          {ticket.customerId && <p style={{ fontSize: 13, marginBottom: 4 }}><strong>ID Layanan:</strong> {ticket.customerId}</p>}
-        </div>
-
-        <div style={{ textAlign: 'left', marginBottom: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span>{ticket.productName}</span>
-            <span>x{ticket.quantity}</span>
+    <div className="receipt-container fade-in">
+      <div className="kwitansi-box">
+        {/* Header Section */}
+        <div className="kwitansi-header">
+          <div className="header-left">
+            <h2 className="store-name">{ticket.storeInfo.name.toUpperCase()}</h2>
+            <p className="store-address">{ticket.storeInfo.address.toUpperCase()}</p>
+            <p className="store-telp">TELP. 0331-123456</p>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 12, color: '#333' }}>
-            <span>Biaya Admin</span>
-            <span>Rp {ticket.adminFee?.toLocaleString() || '2.500'}</span>
+          <div className="header-center">
+            <h1 className="kwitansi-title">KWITANSI</h1>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 20, borderTop: '2px solid #000', paddingTop: 8 }}>
-            <span>TOTAL</span>
-            <span>Rp {ticket.total.toLocaleString()}</span>
+          <div className="header-right">
+            <table>
+              <tbody>
+                <tr>
+                  <td>Tgl Angsuran</td>
+                  <td>: {ticket.date.split(',')[0]}</td>
+                </tr>
+                <tr>
+                  <td>Faktur No</td>
+                  <td>: {ticket.id}</td>
+                </tr>
+                <tr>
+                  <td>No Pelanggan</td>
+                  <td>: {ticket.customerId || '-'}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <div style={{ marginBottom: 24, fontSize: 13, textAlign: 'left' }}>
-          <p><strong>Info Pembayaran:</strong></p>
-          <p>{ticket.storeInfo.bankAccount}</p>
+        <div className="divider-line"></div>
+
+        {/* Content Section 1 */}
+        <div className="kwitansi-content-top">
+          <div className="content-row">
+            <span className="label">Telah terima dari</span>
+            <span className="separator">:</span>
+            <span className="value">{ticket.customerName.toUpperCase()}</span>
+          </div>
+          <div className="content-row" style={{ marginTop: 8 }}>
+            <span className="label">Sejumlah uang</span>
+            <span className="separator">:</span>
+            <span className="value">{formattedTotal}</span>
+            <div className="terbilang-box">
+              {terbilangText.charAt(0).toUpperCase() + terbilangText.slice(1)}
+            </div>
+          </div>
         </div>
 
-        <p style={{ fontStyle: 'italic', fontSize: 12 }}>{ticket.storeInfo.footer}</p>
+        {/* Table Section */}
+        <div className="kwitansi-table-container">
+          <table className="kwitansi-table">
+            <thead>
+              <tr>
+                <th style={{ width: 40 }}>NO</th>
+                <th>KETERANGAN</th>
+                <th style={{ textAlign: 'right' }}>JUMLAH</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={{ textAlign: 'center' }}>1</td>
+                <td>{ticket.productName} x {ticket.quantity}</td>
+                <td style={{ textAlign: 'right' }}>{(ticket.price * ticket.quantity).toLocaleString('id-ID')}</td>
+              </tr>
+              {ticket.adminFee > 0 && (
+                <tr>
+                  <td style={{ textAlign: 'center' }}>2</td>
+                  <td>Biaya Admin</td>
+                  <td style={{ textAlign: 'right' }}>{ticket.adminFee.toLocaleString('id-ID')}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="divider-line double" style={{ marginTop: 40 }}></div>
+        <div className="total-row">
+          <span className="total-label">T O T A L :</span>
+          <span className="total-value">{formattedTotal}</span>
+        </div>
+
+        {/* Footer Section */}
+        <div className="kwitansi-footer">
+          <div className="footer-left">
+            <div className="footer-stats">
+              <div className="stats-row">
+                <span className="label">Total Hutang</span>
+                <span className="separator">:</span>
+                <span className="value">{(ticket.total + 2031250).toLocaleString('id-ID')}</span>
+              </div>
+              <div className="stats-row">
+                <span className="label">Total Angsuran</span>
+                <span className="separator">:</span>
+                <span className="value">{formattedTotal}</span>
+              </div>
+              <div className="stats-row">
+                <span className="label">Sisa Hutang</span>
+                <span className="separator">:</span>
+                <span className="value">2.031.250</span>
+              </div>
+              <div className="stats-row" style={{ marginTop: 12 }}>
+                <span className="label">Status</span>
+                <span className="separator">:</span>
+                <span className="value">Belum Lunas</span>
+              </div>
+              <div className="stats-row">
+                <span className="label">Jatuh Tempo</span>
+                <span className="separator">:</span>
+                <span className="value">12/3/2011</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="footer-center">
+            <p className="perhatian-label">Perhatian :</p>
+            <div className="perhatian-box"></div>
+          </div>
+
+          <div className="footer-right">
+            <p className="kwitansi-date">{ticket.date.split(',')[0]} {new Date().getFullYear()}</p>
+            <p className="footer-signature">gsoft</p>
+          </div>
+        </div>
       </div>
       
-      <div style={{ display: 'flex', gap: 12, marginTop: 24, justifyContent: 'center' }} className="no-print">
+      <div className="no-print" style={{ display: 'flex', gap: 12, marginTop: 24, justifyContent: 'center' }}>
         <button onClick={onBack} className="btn" style={{ background: '#e2e8f0' }}>Kembali</button>
         <button onClick={handlePrint} className="btn btn-primary">Cetak Kwitansi</button>
       </div>
