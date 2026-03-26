@@ -224,19 +224,21 @@ const ArsipTab = ({ currentUser }) => {
 const PembayaranOnlineTab = () => {
   const [selectedService, setSelectedService] = useState('pln');
   const [customerId, setCustomerId] = useState('');
+  const [checking, setChecking] = useState(false);
+  const [result, setResult] = useState(null);
 
   const services = {
     pln: { 
       name: 'PLN POSTPAID', 
       icon: '⚡', 
       color: '#f59e0b',
-      url: 'https://www.sepulsa.com/transaction/pln?type=postpaid'
+      label: 'ID Pelanggan PLN'
     },
     indihome: { 
       name: 'INTERNET INDIHOME', 
       icon: '🌐', 
       color: '#ef4444',
-      url: 'https://live.finpay.id/widgetpg/001001'
+      label: 'Nomor Pelanggan Indihome'
     }
   };
 
@@ -245,59 +247,140 @@ const PembayaranOnlineTab = () => {
       alert("Masukkan ID Pelanggan terlebih dahulu");
       return;
     }
-    window.open(services[selectedService].url, '_blank');
+    
+    setChecking(true);
+    setResult(null);
+
+    // Simulating Real-time Server Inquiry
+    setTimeout(() => {
+      // Mock Data Generation
+      const names = ["AGUS SURIYADI", "BUDI SANTOSO", "SITI AMINAH", "EKO PRASETYO"];
+      const randomName = names[Math.floor(Math.random() * names.length)];
+      const randomBill = Math.floor(Math.random() * (1500000 - 150000 + 1)) + 150000;
+      const adminFee = 2500;
+
+      setResult({
+        idPel: customerId,
+        nama: randomName,
+        layanan: services[selectedService].name,
+        periode: new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' }).toUpperCase(),
+        tagihan: randomBill,
+        admin: adminFee,
+        total: randomBill + adminFee,
+        status: "BELUM LUNAS"
+      });
+      setChecking(false);
+    }, 2000);
   };
+
+  const formatIDR = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
 
   return (
     <div className="card fade-in">
       <h2 style={{ marginBottom: 24, textAlign: 'left' }}>Pembayaran Online</h2>
       
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginBottom: 32 }}>
-        {Object.entries(services).map(([key, svc]) => (
-          <div 
-            key={key}
-            onClick={() => setSelectedService(key)}
-            className="card" 
-            style={{ 
-              cursor: 'pointer',
-              border: selectedService === key ? `2px solid ${svc.color}` : '2px solid transparent',
-              background: selectedService === key ? `${svc.color}10` : '#f8fafc',
-              transition: 'all 0.2s',
-              textAlign: 'center',
-              padding: 24
-            }}
-          >
-            <div style={{ fontSize: 40, marginBottom: 16 }}>{svc.icon}</div>
-            <h3 style={{ fontSize: 16, fontWeight: 700 }}>{svc.name}</h3>
+      {!result && !checking && (
+        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginBottom: 32 }}>
+          {Object.entries(services).map(([key, svc]) => (
+            <div 
+              key={key}
+              onClick={() => setSelectedService(key)}
+              className="card" 
+              style={{ 
+                cursor: 'pointer',
+                border: selectedService === key ? `2px solid ${svc.color}` : '2px solid transparent',
+                background: selectedService === key ? `${svc.color}10` : '#f8fafc',
+                transition: 'all 0.2s',
+                textAlign: 'center',
+                padding: 24
+              }}
+            >
+              <div style={{ fontSize: 40, marginBottom: 16 }}>{svc.icon}</div>
+              <h3 style={{ fontSize: 16, fontWeight: 700 }}>{svc.name}</h3>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!result && (
+        <div className="card" style={{ maxWidth: 500, margin: '0 auto', padding: 32, border: '1px solid #e2e8f0', textAlign: 'center' }}>
+          <h4 style={{ marginBottom: 20, color: 'var(--text-muted)' }}>Cek Tagihan Realtime</h4>
+          <div className="form-group" style={{ textAlign: 'left' }}>
+            <label>{services[selectedService].label}</label>
+            <input 
+              type="text" 
+              value={customerId} 
+              onChange={e => setCustomerId(e.target.value)}
+              placeholder="Masukkan ID Pelanggan" 
+              style={{ fontSize: 18, padding: 14 }}
+              disabled={checking}
+            />
           </div>
-        ))}
-      </div>
-
-      <div className="card" style={{ maxWidth: 500, margin: '0 auto', padding: 32, border: '1px solid #e2e8f0' }}>
-        <h4 style={{ marginBottom: 20, color: 'var(--text-muted)' }}>Cek Tagihan Realtime</h4>
-        <div className="form-group" style={{ textAlign: 'left' }}>
-          <label>ID Pelanggan ({services[selectedService].name})</label>
-          <input 
-            type="text" 
-            value={customerId} 
-            onChange={e => setCustomerId(e.target.value)}
-            placeholder="Masukkan ID Pelanggan" 
-            style={{ fontSize: 18, padding: 14 }}
-          />
+          
+          <button 
+            onClick={handleCheck}
+            disabled={checking}
+            className="btn btn-primary" 
+            style={{ width: '100%', padding: '16px', fontSize: 16, background: services[selectedService].color, borderColor: 'transparent', fontWeight: 700 }}
+          >
+            {checking ? '⏳ Menghubungkan ke Server...' : 'Lanjutkan Pengecekan'}
+          </button>
         </div>
-        
-        <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, marginBottom: 24, fontSize: 13, borderLeft: `4px solid ${services[selectedService].color}`, textAlign: 'left' }}>
-          💡 Klik tombol di bawah untuk melakukan pengecekan tagihan melalui portal resmi. Data ID Pelanggan akan tetap aman.
-        </div>
+      )}
 
-        <button 
-          onClick={handleCheck}
-          className="btn btn-primary" 
-          style={{ width: '100%', padding: '16px', fontSize: 16, background: services[selectedService].color, borderColor: 'transparent', fontWeight: 700 }}
-        >
-          Lanjutkan Pengecekan 
-        </button>
-      </div>
+      {result && (
+        <div className="fade-in" style={{ maxWidth: 600, margin: '0 auto' }}>
+          <div className="card" style={{ padding: 0, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+            <div style={{ background: services[selectedService].color, color: 'white', padding: '20px', textAlign: 'center' }}>
+               <h3 style={{ margin: 0 }}>HASIL PENGECEKAN</h3>
+            </div>
+            <div style={{ padding: 24 }}>
+               <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: 16, textAlign: 'left' }}>
+                  <div>
+                    <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>Layanan</p>
+                    <p style={{ fontWeight: 700, margin: 0 }}>{result.layanan}</p>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>ID Pelanggan</p>
+                    <p style={{ fontWeight: 700, margin: 0 }}>{result.idPel}</p>
+                  </div>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>Nama Pelanggan</p>
+                    <p style={{ fontWeight: 700, margin: 0, fontSize: 18 }}>{result.nama}</p>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>Periode</p>
+                    <p style={{ fontWeight: 700, margin: 0 }}>{result.periode}</p>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>Status</p>
+                    <p style={{ fontWeight: 700, margin: 0, color: '#ef4444' }}>{result.status}</p>
+                  </div>
+               </div>
+
+               <hr style={{ margin: '24px 0', border: 'none', borderTop: '1px dashed #e2e8f0' }} />
+
+               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span>Tagihan Listrik</span>
+                  <span>{formatIDR(result.tagihan)}</span>
+               </div>
+               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <span>Biaya Admin</span>
+                  <span>{formatIDR(result.admin)}</span>
+               </div>
+               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 0', borderTop: '2px solid #f1f5f9' }}>
+                  <span style={{ fontWeight: 800 }}>TOTAL BAYAR</span>
+                  <span style={{ fontWeight: 800, color: 'var(--primary)', fontSize: 20 }}>{formatIDR(result.total)}</span>
+               </div>
+
+               <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+                  <button onClick={() => alert("Proses Bayar Berhasil!")} className="btn btn-primary" style={{ flex: 1, padding: 14, background: '#10b981' }}>Bayar Sekarang</button>
+                  <button onClick={() => setResult(null)} className="btn" style={{ flex: 1, padding: 14, background: '#f1f5f9' }}>Cek ID Lain</button>
+               </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
