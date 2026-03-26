@@ -1095,6 +1095,12 @@ const Receipt = ({ ticket, onBack }) => {
 
 const TransactionHistoryTab = ({ transactions }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+
+  if (showReceipt && selectedTicket) {
+    return <Receipt ticket={selectedTicket} onBack={() => setShowReceipt(false)} />;
+  }
 
   const deleteTransaction = (fbKey) => {
     if (!fbKey) {
@@ -1104,6 +1110,11 @@ const TransactionHistoryTab = ({ transactions }) => {
     if (window.confirm('Hapus riwayat transaksi ini?')) {
       remove(ref(db, `transactions/${fbKey}`));
     }
+  };
+
+  const handlePrint = (ticket) => {
+    setSelectedTicket(ticket);
+    setShowReceipt(true);
   };
 
   // Sort by timestamp (descending)
@@ -1154,7 +1165,10 @@ const TransactionHistoryTab = ({ transactions }) => {
                   Rp {t.total.toLocaleString()}
                 </td>
                 <td>
-                  <button onClick={() => deleteTransaction(t.fbKey)} style={{ color: '#ef4444', background: 'none', fontWeight: 600, fontSize: 13 }}>Hapus</button>
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    <button onClick={() => handlePrint(t)} style={{ color: 'var(--primary)', background: 'none', fontWeight: 600, fontSize: 13 }}>Cetak</button>
+                    <button onClick={() => deleteTransaction(t.fbKey)} style={{ color: '#ef4444', background: 'none', fontWeight: 600, fontSize: 13 }}>Hapus</button>
+                  </div>
                 </td>
               </tr>
             ))
