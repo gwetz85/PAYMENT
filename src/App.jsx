@@ -1011,6 +1011,59 @@ const SettingsTab = ({ products, storeInfo }) => {
     }
   };
 
+  const renderProductRow = (p) => (
+    <tr key={p.id}>
+      <td>
+        {editingId === p.id ? (
+          <input style={{ padding: 4 }} value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} />
+        ) : p.name}
+      </td>
+      <td>
+        {editingId === p.id ? (
+          <select style={{ padding: 4 }} value={editData.category} onChange={e => setEditData({...editData, category: e.target.value})}>
+            <option value="PLN">PLN</option>
+            <option value="INTERNET">INTERNET</option>
+            <option value="PDAM">PDAM</option>
+            <option value="BPJS">BPJS</option>
+            <option value="PULSA">PULSA</option>
+            <option value="TV VOUCHER">TV VOUCHER</option>
+            <option value="IPTV">IPTV</option>
+            <option value="HARIAN">HARIAN</option>
+          </select>
+        ) : (
+          <span className="badge badge-primary">{p.category}</span>
+        )}
+      </td>
+      <td>
+        {editingId === p.id ? (
+          <input type="number" style={{ padding: 4 }} value={editData.price} onChange={e => setEditData({...editData, price: parseInt(e.target.value)})} />
+        ) : (
+          `Rp ${p.price.toLocaleString()}`
+        )}
+      </td>
+      <td>
+        {editingId === p.id ? (
+          <input type="number" style={{ padding: 4 }} value={editData.stock} onChange={e => setEditData({...editData, stock: parseInt(e.target.value)})} />
+        ) : p.stock}
+      </td>
+      <td>
+        <div style={{ display: 'flex', gap: 12 }}>
+          {editingId === p.id ? (
+            <>
+              <button onClick={saveEdit} style={{ color: '#059669', background: 'none', fontWeight: 600 }}>Simpan</button>
+              <button onClick={cancelEdit} style={{ color: '#64748b', background: 'none', fontWeight: 600 }}>Batal</button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => startEdit(p)} style={{ color: 'var(--primary)', background: 'none', fontWeight: 600 }}>Edit</button>
+              <button onClick={() => deleteProduct(p.id)} style={{ color: '#ef4444', background: 'none', fontWeight: 600 }}>Hapus</button>
+            </>
+          )}
+        </div>
+      </td>
+    </tr>
+  );
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <section className="card">
@@ -1100,71 +1153,60 @@ const SettingsTab = ({ products, storeInfo }) => {
             <button onClick={clearAllProducts} className="btn" style={{ background: '#fee2e2', color: '#991b1b' }}>Hapus Semua</button>
           </div>
         </div>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Produk</th>
-              <th>Kategori</th>
-              <th>Harga</th>
-              <th>Stok</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map(p => (
-              <tr key={p.id}>
-                <td>
-                  {editingId === p.id ? (
-                    <input style={{ padding: 4 }} value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} />
-                  ) : p.name}
-                </td>
-                <td>
-                  {editingId === p.id ? (
-                    <select style={{ padding: 4 }} value={editData.category} onChange={e => setEditData({...editData, category: e.target.value})}>
-                      <option value="PLN">PLN</option>
-                      <option value="INTERNET">INTERNET</option>
-                      <option value="PDAM">PDAM</option>
-                      <option value="BPJS">BPJS</option>
-                      <option value="PULSA">PULSA</option>
-                      <option value="TV VOUCHER">TV VOUCHER</option>
-                      <option value="IPTV">IPTV</option>
-                      <option value="HARIAN">HARIAN</option>
-                    </select>
-                  ) : (
-                    <span className="badge badge-primary">{p.category}</span>
-                  )}
-                </td>
-                <td>
-                  {editingId === p.id ? (
-                    <input type="number" style={{ padding: 4 }} value={editData.price} onChange={e => setEditData({...editData, price: parseInt(e.target.value)})} />
-                  ) : (
-                    `Rp ${p.price.toLocaleString()}`
-                  )}
-                </td>
-                <td>
-                  {editingId === p.id ? (
-                    <input type="number" style={{ padding: 4 }} value={editData.stock} onChange={e => setEditData({...editData, stock: parseInt(e.target.value)})} />
-                  ) : p.stock}
-                </td>
-                <td>
-                  <div style={{ display: 'flex', gap: 12 }}>
-                    {editingId === p.id ? (
-                      <>
-                        <button onClick={saveEdit} style={{ color: '#059669', background: 'none', fontWeight: 600 }}>Simpan</button>
-                        <button onClick={cancelEdit} style={{ color: '#64748b', background: 'none', fontWeight: 600 }}>Batal</button>
-                      </>
-                    ) : (
-                      <>
-                        <button onClick={() => startEdit(p)} style={{ color: 'var(--primary)', background: 'none', fontWeight: 600 }}>Edit</button>
-                        <button onClick={() => deleteProduct(p.id)} style={{ color: '#ef4444', background: 'none', fontWeight: 600 }}>Hapus</button>
-                      </>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+          {/* Section 1: Produk Harian */}
+          <div>
+            <h3 style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ background: 'var(--accent)', color: 'white', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>📦</span>
+              Stok Barang Harian
+            </h3>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Produk</th>
+                  <th>Kategori</th>
+                  <th>Harga</th>
+                  <th>Stok</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.filter(p => p.category === 'HARIAN').length === 0 ? (
+                  <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada produk harian</td></tr>
+                ) : (
+                  products.filter(p => p.category === 'HARIAN').map(p => renderProductRow(p))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Section 2: Produk Digital */}
+          <div>
+            <h3 style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ background: 'var(--primary)', color: 'white', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🌐</span>
+              Layanan Produk Digital
+            </h3>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Produk</th>
+                  <th>Kategori</th>
+                  <th>Harga</th>
+                  <th>Stok</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.filter(p => p.category !== 'HARIAN').length === 0 ? (
+                  <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada layanan digital</td></tr>
+                ) : (
+                  products.filter(p => p.category !== 'HARIAN').map(p => renderProductRow(p))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
     </div>
   );
