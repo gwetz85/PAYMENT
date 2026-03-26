@@ -32,8 +32,8 @@ const ArsipTab = ({ currentUser }) => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.size > 2 * 1024 * 1024) {
-      alert("Maksimal 2MB");
+    if (file && file.size > 1 * 1024 * 1024) {
+      alert("⚠️ MODE GRATIS: Ukuran file maksimal 1MB (1.024 KB). Mohon gunakan screenshot atau kecilkan ukuran gambar.");
       return;
     }
     setUploadForm({ ...uploadForm, file });
@@ -46,32 +46,34 @@ const ArsipTab = ({ currentUser }) => {
     }
 
     setUploading(true);
-    const fileName = `${Date.now()}_${uploadForm.file.name}`;
-    const storageRef = sRef(storage, `archives/${currentUser.id}/${fileName}`);
+    const reader = new FileReader();
+    reader.readAsDataURL(uploadForm.file);
+    reader.onload = async () => {
+      try {
+        const base64Data = reader.result;
+        const archiveRef = ref(db, `user_archives/${currentUser.id}`);
+        await push(archiveRef, {
+          dataName: uploadForm.dataName,
+          type: uploadForm.type,
+          transactionDate: uploadForm.date,
+          url: base64Data, // Save directly to RTDB (FREE)
+          timestamp: Date.now(),
+          uploaddate: new Date().toLocaleString('id-ID')
+        });
 
-    try {
-      await uploadBytes(storageRef, uploadForm.file);
-      const downloadURL = await getDownloadURL(storageRef);
-      
-      const archiveRef = ref(db, `user_archives/${currentUser.id}`);
-      await push(archiveRef, {
-        dataName: uploadForm.dataName,
-        type: uploadForm.type,
-        transactionDate: uploadForm.date,
-        url: downloadURL,
-        storagePath: `archives/${currentUser.id}/${fileName}`,
-        timestamp: Date.now(),
-        uploaddate: new Date().toLocaleString('id-ID')
-      });
-
+        setUploading(false);
+        setShowUploadModal(false);
+        setUploadForm({ dataName: '', type: '', date: new Date().toISOString().split('T')[0], file: null });
+        alert("Arsip berhasil disimpan secara gratis ke database!");
+      } catch (err) {
+        alert("Gagal menyimpan data ke database.");
+        setUploading(false);
+      }
+    };
+    reader.onerror = () => {
+      alert("Gagal membaca file gambar.");
       setUploading(false);
-      setShowUploadModal(false);
-      setUploadForm({ dataName: '', type: '', date: new Date().toISOString().split('T')[0], file: null });
-      alert("Arsip berhasil disimpan!");
-    } catch (err) {
-      alert("Gagal mengupload. Periksa koneksi atau Firebase rules.");
-      setUploading(false);
-    }
+    };
   };
 
   const handleEdit = async () => {
@@ -88,8 +90,6 @@ const ArsipTab = ({ currentUser }) => {
   const deleteFile = async (item) => {
     if (window.confirm("Hapus arsip ini?")) {
       try {
-        const storageRef = sRef(storage, item.storagePath);
-        await deleteObject(storageRef);
         await remove(ref(db, `user_archives/${currentUser.id}/${item.fbKey}`));
       } catch (err) { alert("Gagal menghapus"); }
     }
@@ -97,35 +97,39 @@ const ArsipTab = ({ currentUser }) => {
 
   return (
     <div className="card">
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button onClick={() => setShowUploadModal(true)} className="btn btn-primary" style={{ padding: '12px 24px' }}>
           ＋ Tambah Arsip Baru
         </button>
+        <div style={{ color: '#059669', fontSize: 12, background: '#f0fdf4', padding: '4px 12px', borderRadius: 20, fontWeight: 600 }}>
+          ⚡ Mode Database Aktif (Gratis)
+        </div>
       </div>
 
       {/* Upload Modal */}
       {showUploadModal && (
         <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div className="card" style={{ width: '100%', maxWidth: 500, padding: 24 }}>
-            <h2 style={{ marginBottom: 20 }}>Upload Arsip Transaksi</h2>
+            <h2 style={{ marginBottom: 20 }}>Upload Arsip (Gratis)</h2>
             <div className="form-group">
               <label>Data Transaksi</label>
-              <input type="text" value={uploadForm.dataName} onChange={e => setUploadForm({...uploadForm, dataName: e.target.value})} placeholder="Contoh: Pembelian Beras Toko ABC" />
+              <input type="text" value={uploadForm.dataName} onChange={e => setUploadForm({...uploadForm, dataName: e.target.value})} placeholder="Nama transaksi/arsip" />
             </div>
             <div className="form-group">
               <label>Jenis Transaksi</label>
-              <input type="text" value={uploadForm.type} onChange={e => setUploadForm({...uploadForm, type: e.target.value})} placeholder="Contoh: Pengeluaran / Pemasukan" />
+              <input type="text" value={uploadForm.type} onChange={e => setUploadForm({...uploadForm, type: e.target.value})} placeholder="Pemasukan / Pengeluaran / dll" />
             </div>
             <div className="form-group">
               <label>Tanggal Transaksi</label>
               <input type="date" value={uploadForm.date} onChange={e => setUploadForm({...uploadForm, date: e.target.value})} />
             </div>
             <div className="form-group">
-              <label>Pilih File (Gambar)</label>
+              <label>Pilih File (Gambar, Maks 1MB)</label>
               <input type="file" accept="image/*" onChange={handleFileChange} />
+              <p style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>Tips: Gunakan screenshot atau kompres file jika terlalu besar.</p>
             </div>
             <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
-              <button disabled={uploading} onClick={submitUpload} className="btn btn-primary" style={{ flex: 1 }}>{uploading ? 'Mengupload...' : 'Simpan Arsip'}</button>
+              <button disabled={uploading} onClick={submitUpload} className="btn btn-primary" style={{ flex: 1 }}>{uploading ? 'Menyimpan...' : 'Simpan Arsip'}</button>
               <button disabled={uploading} onClick={() => setShowUploadModal(false)} className="btn" style={{ flex: 1, background: '#f1f5f9' }}>Batal</button>
             </div>
           </div>
@@ -158,7 +162,7 @@ const ArsipTab = ({ currentUser }) => {
                   <p style={{ fontWeight: 700 }}>{viewingItem.uploaddate}</p>
                </div>
             </div>
-            <div style={{ border: '2px dashed #ddd', borderRadius: 12, overflow: 'hidden', textAlign: 'center' }}>
+            <div style={{ border: '2px dashed #ddd', borderRadius: 12, overflow: 'hidden', textAlign: 'center', background: '#f8fafc' }}>
                <img src={viewingItem.url} style={{ maxWidth: '100%', maxHeight: '50vh' }} />
             </div>
           </div>
@@ -190,14 +194,13 @@ const ArsipTab = ({ currentUser }) => {
         </div>
       )}
 
-      {/* Archive Grid */}
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
         {files.length === 0 ? (
           <p style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Belum ada arsip.</p>
         ) : (
           files.sort((a,b) => b.timestamp - a.timestamp).map(item => (
             <div key={item.fbKey} className="card" style={{ padding: 0, overflow: 'hidden' }}>
-              <div style={{ height: 160, overflow: 'hidden', background: '#f8fafc' }}>
+              <div style={{ height: 160, overflow: 'hidden', background: '#f8fafc', cursor: 'zoom-in' }} onClick={() => setViewingItem(item)}>
                  <img src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               <div style={{ padding: 16 }}>
