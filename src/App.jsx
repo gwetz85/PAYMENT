@@ -55,9 +55,9 @@ const AuthPage = ({ users, setUsers, setCurrentUser }) => {
     <div className="auth-container">
       <div className="auth-card fade-in">
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div className="logo-icon" style={{ width: 64, height: 64, margin: '0 auto 16px', fontSize: 32 }}>T</div>
+          <div className="logo-icon" style={{ width: 64, height: 64, margin: '0 auto 16px', fontSize: 32 }}>P</div>
           <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--primary)' }}>{isLogin ? 'Selamat Datang' : 'Daftar Akun'}</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14, fontWeight: 500 }}>Toko-<span>KU</span> | Belanja Mudah & Cepat</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14, fontWeight: 500 }}>PASAR<span>KU</span> | Belanja Mudah & Cepat</p>
         </div>
 
         <form onSubmit={handleAuth}>
@@ -103,8 +103,8 @@ const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout }) => (
   <div className="sidebar">
     <div>
       <div className="logo" style={{ marginBottom: 32 }}>
-        <div className="logo-icon">T</div>
-        Toko-<span>KU</span>
+        <div className="logo-icon">P</div>
+        PASAR<span>KU</span>
       </div>
       <div className="nav-links">
         <button 
@@ -177,10 +177,10 @@ function App() {
   
   const [users, setUsers] = useState({});
   const [storeInfo, setStoreInfo] = useState({
-    name: "Toko-KU",
+    name: "PASARKU",
     address: "Jl. Merdeka No. 123, Jakarta",
     bankAccount: "BANK BNI - 1234567890",
-    footer: "Terima kasih telah belanja di Toko-KU!"
+    footer: "Terima kasih telah belanja di PASARKU!"
   });
   const [products, setProducts] = useState({});
   const [transactions, setTransactions] = useState([]);
@@ -267,7 +267,7 @@ function App() {
           <div className="page fade-in">
             <header className="page-header">
               <h1 className="page-title">Ringkasan Dashboard</h1>
-              <p className="page-subtitle">Ringkasan performa penjualan Toko-KU</p>
+              <p className="page-subtitle">Ringkasan performa penjualan PASARKU</p>
             </header>
             <DashboardTab transactions={transactions} users={Object.values(users || {})} />
           </div>
