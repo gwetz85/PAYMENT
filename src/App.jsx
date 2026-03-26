@@ -983,27 +983,26 @@ const Receipt = ({ ticket, onBack }) => {
       <div className="kwitansi-box">
         {/* Header Section */}
         <div className="kwitansi-header">
-          <div className="header-left">
-            <h2 className="store-name">{ticket.storeInfo.name.toUpperCase()}</h2>
-            <p className="store-address">{ticket.storeInfo.address.toUpperCase()}</p>
-            <p className="store-telp">TELP. 0331-123456</p>
+          <div className="header-left" style={{ textAlign: 'left' }}>
+            <h2 className="store-name" style={{ margin: 0, fontWeight: 800 }}>{ticket.storeInfo.name.toUpperCase()}</h2>
+            <p className="store-address" style={{ margin: 0, fontSize: 13 }}>{ticket.storeInfo.address.toUpperCase()}</p>
           </div>
           <div className="header-center">
-            <h1 className="kwitansi-title">KWITANSI</h1>
+            <h1 className="kwitansi-title" style={{ margin: 0, fontSize: 32, fontWeight: 600 }}>KWITANSI</h1>
           </div>
           <div className="header-right">
-            <table>
+            <table style={{ fontSize: 14 }}>
               <tbody>
                 <tr>
-                  <td>Tgl Angsuran</td>
+                  <td style={{ padding: '2px 8px' }}>Tgl Angsuran</td>
                   <td>: {ticket.date.split(',')[0]}</td>
                 </tr>
                 <tr>
-                  <td>Faktur No</td>
+                  <td style={{ padding: '2px 8px' }}>Faktur No</td>
                   <td>: {ticket.id}</td>
                 </tr>
                 <tr>
-                  <td>No Pelanggan</td>
+                  <td style={{ padding: '2px 8px' }}>No Pelanggan</td>
                   <td>: {ticket.customerId || '-'}</td>
                 </tr>
               </tbody>
@@ -1011,20 +1010,29 @@ const Receipt = ({ ticket, onBack }) => {
           </div>
         </div>
 
-        <div className="divider-line"></div>
+        <div className="divider-line" style={{ borderTop: '2px solid #000', margin: '15px 0' }}></div>
 
         {/* Content Section 1 */}
         <div className="kwitansi-content-top">
-          <div className="content-row">
-            <span className="label">Telah terima dari</span>
+          <div className="content-row" style={{ marginBottom: 12 }}>
+            <span className="label" style={{ width: 140 }}>Telah terima dari</span>
             <span className="separator">:</span>
-            <span className="value">{ticket.customerName.toUpperCase()}</span>
+            <span className="value" style={{ fontWeight: 700 }}>{ticket.customerName.toUpperCase()}</span>
           </div>
-          <div className="content-row" style={{ marginTop: 8 }}>
-            <span className="label">Sejumlah uang</span>
-            <span className="separator">:</span>
-            <span className="value">{formattedTotal}</span>
-            <div className="terbilang-box">
+          <div className="content-row" style={{ display: 'flex', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+               <span className="label" style={{ width: 140 }}>Sejumlah uang</span>
+               <span className="separator">:</span>
+               <span className="value" style={{ fontWeight: 700, fontSize: 18, marginRight: 20 }}>{formattedTotal}</span>
+            </div>
+            <div className="terbilang-box" style={{ 
+              border: '1.5px dashed #666', 
+              borderRadius: '15px', 
+              padding: '10px 25px', 
+              fontStyle: 'italic',
+              flex: 1,
+              marginTop: -5
+            }}>
               {terbilangText.charAt(0).toUpperCase() + terbilangText.slice(1)}
             </div>
           </div>
@@ -1032,77 +1040,47 @@ const Receipt = ({ ticket, onBack }) => {
 
         {/* Table Section */}
         <div className="kwitansi-table-container">
-          <table className="kwitansi-table">
+          <table className="kwitansi-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr>
-                <th style={{ width: 40 }}>NO</th>
-                <th>KETERANGAN</th>
-                <th style={{ textAlign: 'right' }}>JUMLAH</th>
+              <tr style={{ borderTop: '2px solid #000', borderBottom: '2px solid #000' }}>
+                <th style={{ width: 50, padding: '10px', textAlign: 'center', fontWeight: 'bold' }}>NO</th>
+                <th style={{ padding: '10px', textAlign: 'left', fontWeight: 'bold' }}>KETERANGAN</th>
+                <th style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>JUMLAH</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style={{ textAlign: 'center' }}>1</td>
-                <td>{ticket.productName} x {ticket.quantity}</td>
-                <td style={{ textAlign: 'right' }}>{(ticket.price * ticket.quantity).toLocaleString('id-ID')}</td>
+                <td style={{ textAlign: 'center', padding: '10px' }}>1</td>
+                <td style={{ padding: '10px' }}>{ticket.productName} x {ticket.quantity}</td>
+                <td style={{ textAlign: 'right', padding: '10px', fontWeight: 500 }}>{(ticket.price * ticket.quantity).toLocaleString('id-ID')}</td>
               </tr>
               {ticket.adminFee > 0 && (
                 <tr>
-                  <td style={{ textAlign: 'center' }}>2</td>
+                  <td style={{ textAlign: 'center', padding: '10px' }}>2</td>
                   <td>Biaya Admin</td>
-                  <td style={{ textAlign: 'right' }}>{ticket.adminFee.toLocaleString('id-ID')}</td>
+                  <td style={{ textAlign: 'right', padding: '10px', fontWeight: 500 }}>{ticket.adminFee.toLocaleString('id-ID')}</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
 
-        <div className="divider-line double" style={{ marginTop: 40 }}></div>
-        <div className="total-row">
-          <span className="total-label">T O T A L :</span>
-          <span className="total-value">{formattedTotal}</span>
+        <div className="divider-line" style={{ borderTop: '3px double #333', margin: '20px 0 10px' }}></div>
+        
+        <div className="total-row" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 60, marginBottom: 30 }}>
+          <span className="total-label" style={{ fontSize: 22, fontWeight: 700 }}>T O T A L :</span>
+          <span className="total-value" style={{ fontSize: 22, fontWeight: 700 }}>{formattedTotal}</span>
         </div>
 
         {/* Footer Section */}
-        <div className="kwitansi-footer">
+        <div className="kwitansi-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div className="footer-left">
-            <div className="footer-stats">
-              <div className="stats-row">
-                <span className="label">Total Hutang</span>
-                <span className="separator">:</span>
-                <span className="value">{(ticket.total + 2031250).toLocaleString('id-ID')}</span>
-              </div>
-              <div className="stats-row">
-                <span className="label">Total Angsuran</span>
-                <span className="separator">:</span>
-                <span className="value">{formattedTotal}</span>
-              </div>
-              <div className="stats-row">
-                <span className="label">Sisa Hutang</span>
-                <span className="separator">:</span>
-                <span className="value">2.031.250</span>
-              </div>
-              <div className="stats-row" style={{ marginTop: 12 }}>
-                <span className="label">Status</span>
-                <span className="separator">:</span>
-                <span className="value">Belum Lunas</span>
-              </div>
-              <div className="stats-row">
-                <span className="label">Jatuh Tempo</span>
-                <span className="separator">:</span>
-                <span className="value">12/3/2011</span>
-              </div>
-            </div>
+            <p className="perhatian-label" style={{ fontWeight: 700, fontStyle: 'italic', marginBottom: 5 }}>Perhatian :</p>
+            <div className="perhatian-box" style={{ width: 350, height: 100, border: '1.5px solid #000' }}></div>
           </div>
           
-          <div className="footer-center">
-            <p className="perhatian-label">Perhatian :</p>
-            <div className="perhatian-box"></div>
-          </div>
-
-          <div className="footer-right">
-            <p className="kwitansi-date">{ticket.date.split(',')[0]} {new Date().getFullYear()}</p>
-            <p className="footer-signature">gsoft</p>
+          <div className="footer-right" style={{ textAlign: 'right' }}>
+            <p className="kwitansi-date" style={{ fontSize: 16, marginBottom: 0 }}>{ticket.date.split(',')[0]} {new Date().getFullYear()}</p>
           </div>
         </div>
       </div>
