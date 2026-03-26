@@ -522,6 +522,8 @@ const PaymentTab = ({ products, storeInfo }) => {
       return;
     }
     
+    const currentAdminFee = selectedCategory === 'PULSA' ? 0 : ADMIN_FEE;
+    
     const ticket = {
       id: "TRX-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
       customerName: formData.name,
@@ -530,8 +532,8 @@ const PaymentTab = ({ products, storeInfo }) => {
       productName: selectedProduct.name,
       price: selectedProduct.price,
       quantity: formData.quantity,
-      adminFee: ADMIN_FEE,
-      total: (selectedProduct.price * formData.quantity) + ADMIN_FEE,
+      adminFee: currentAdminFee,
+      total: (selectedProduct.price * formData.quantity) + currentAdminFee,
       date: new Date().toLocaleString('id-ID'),
       timestamp: Date.now(),
       storeInfo: storeInfo
@@ -671,13 +673,13 @@ const PaymentTab = ({ products, storeInfo }) => {
                         Harga Satuan: Rp {selectedProduct.price.toLocaleString()}
                       </p>
                       <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
-                        Biaya Admin: Rp {ADMIN_FEE.toLocaleString()}
+                        Biaya Admin: Rp {(selectedCategory === 'PULSA' ? 0 : ADMIN_FEE).toLocaleString()}
                       </p>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>TOTAL PEMBAYARAN</p>
                       <p style={{ fontSize: 28, fontWeight: 800, color: 'var(--primary)' }}>
-                        Rp {((formData.quantity * selectedProduct.price) + ADMIN_FEE).toLocaleString()}
+                        Rp {((formData.quantity * selectedProduct.price) + (selectedCategory === 'PULSA' ? 0 : ADMIN_FEE)).toLocaleString()}
                       </p>
                     </div>
                   </div>
