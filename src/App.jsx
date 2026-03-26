@@ -1008,16 +1008,20 @@ const Receipt = ({ ticket, onBack }) => {
 const TransactionHistoryTab = ({ transactions }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
+  const deleteTransaction = (id) => {
+    if (window.confirm('Hapus riwayat transaksi ini?')) {
+      remove(ref(db, `transactions/${id}`));
+    }
+  };
+
   // Sort by timestamp (descending)
   const sortedTransactions = [...transactions]
     .filter(t => 
-      t.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      t.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.productName.toLowerCase().includes(searchTerm.toLowerCase())
+      (t.id?.toLowerCase() || '').includes(searchTerm.toLowerCase()) || 
+      (t.customerName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (t.productName?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     )
-    .sort((a, b) => {
-      return (b.timestamp || 0) - (a.timestamp || 0);
-    });
+    .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
   return (
     <div className="card">
@@ -1038,11 +1042,12 @@ const TransactionHistoryTab = ({ transactions }) => {
             <th>Pelanggan</th>
             <th>Layanan</th>
             <th>Total</th>
+            <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
           {sortedTransactions.length === 0 ? (
-            <tr><td colSpan="5" style={{ textAlign: 'center', padding: 20 }}>{searchTerm ? 'Transaksi tidak ditemukan' : 'Belum ada transaksi'}</td></tr>
+            <tr><td colSpan="6" style={{ textAlign: 'center', padding: 20 }}>{searchTerm ? 'Transaksi tidak ditemukan' : 'Belum ada transaksi'}</td></tr>
           ) : (
             sortedTransactions.map(t => (
               <tr key={t.id}>
@@ -1055,6 +1060,9 @@ const TransactionHistoryTab = ({ transactions }) => {
                 <td>{t.productName}</td>
                 <td style={{ fontWeight: 700, color: 'var(--primary)' }}>
                   Rp {t.total.toLocaleString()}
+                </td>
+                <td>
+                  <button onClick={() => deleteTransaction(t.id)} style={{ color: '#ef4444', background: 'none', fontWeight: 600, fontSize: 13 }}>Hapus</button>
                 </td>
               </tr>
             ))
