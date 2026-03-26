@@ -238,24 +238,6 @@ const PembayaranOnlineTab = () => {
       icon: '🌐', 
       color: '#ef4444',
       url: 'https://live.finpay.id/widgetpg/001001'
-    },
-    pdam: {
-      name: 'AIR PDAM',
-      icon: '💧',
-      color: '#3b82f6',
-      url: 'https://www.sepulsa.com/transaction/pdam'
-    },
-    bpjs: {
-      name: 'BPJS KESEHATAN',
-      icon: '🏥',
-      color: '#059669',
-      url: 'https://www.sepulsa.com/transaction/bpjs'
-    },
-    tv: {
-      name: 'TV KABEL & INTERNET',
-      icon: '📺',
-      color: '#8b5cf6',
-      url: 'https://www.sepulsa.com/transaction/tv'
     }
   };
 
@@ -343,26 +325,56 @@ const PembayaranOnlineTab = () => {
               </button>
             </div>
             
-            {/* Kontainer Portal */}
+            {/* Kontainer Portal Centered & Scaled */}
             <div style={{ 
               flex: 1, 
-              background: 'white', 
-              borderRadius: 20, 
+              background: '#f8fafc', // Light gray bg for "app" feel
+              borderRadius: 24, 
               overflow: 'hidden', 
-              border: '2px solid #e2e8f0',
-              boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              padding: '20px',
               minHeight: 700,
               position: 'relative'
             }}>
-               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 0 }}>
-                  <div className="spinner" style={{ margin: '0 auto 16px' }}></div>
-                  <p style={{ color: 'var(--text-muted)' }}>Menghubungkan ke Portal Resmi...</p>
+               <div style={{ 
+                 width: '100%', 
+                 maxWidth: 500, // Mobile app width
+                 height: '100%',
+                 minHeight: 800,
+                 background: 'white',
+                 borderRadius: 16,
+                 overflow: 'hidden',
+                 border: '8px solid #334155', // Device frame style
+                 boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+                 position: 'relative',
+                 display: 'flex',
+                 flexDirection: 'column'
+               }}>
+                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 0 }}>
+                     <div className="spinner" style={{ margin: '0 auto 16px' }}></div>
+                     <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Menghubungkan ke Portal...</p>
+                  </div>
+                  <iframe 
+                     src={services[selectedService].url} 
+                     style={{ 
+                       width: '125%', // Oversize for zooming
+                       height: '125%', 
+                       border: 'none', 
+                       position: 'relative', 
+                       zIndex: 1, 
+                       background: 'white',
+                       transform: 'scale(0.8)', // Scale down the oversized iframe to fill container with "zoom"
+                       transformOrigin: 'top left'
+                     }}
+                     title="Inquiry Portal"
+                  />
                </div>
-               <iframe 
-                  src={services[selectedService].url} 
-                  style={{ width: '100%', height: '100%', border: 'none', position: 'relative', zIndex: 1, background: 'white' }}
-                  title="Inquiry Portal"
-               />
+               <p style={{ marginTop: 16, fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>
+                 💡 Tips: Gunakan kolom di dalam portal untuk mengecek tagihan sesuai ID yang diinput.
+               </p>
             </div>
          </div>
        )}
