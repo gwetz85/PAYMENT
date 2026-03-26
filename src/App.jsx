@@ -214,32 +214,7 @@ function App() {
       if (data) {
         setProducts(data);
       } else {
-        // Seed default products
-        const defaultProducts = [
-          { name: "PLN Postpaid", category: "PLN", price: 0, stock: 999 },
-          { name: "PLN Prepaid (Token)", category: "PLN", price: 52000, stock: 100 },
-          { name: "INDIHOME", category: "INTERNET", price: 350000, stock: 100 },
-          { name: "SOLNET", category: "INTERNET", price: 250000, stock: 100 },
-          { name: "PROXINET", category: "INTERNET", price: 200000, stock: 100 },
-          { name: "MTNET", category: "INTERNET", price: 150000, stock: 100 },
-          { name: "PDAM Tirta", category: "PDAM", price: 75000, stock: 100 },
-          { name: "BPJS KESEHATAN", category: "BPJS", price: 150000, stock: 999 },
-          { name: "BPJS KETENAGAKERJAAN", category: "BPJS", price: 200000, stock: 999 },
-          { name: "Pulsa Reguler 10k", category: "PULSA", price: 12000, stock: 500 },
-          { name: "Paket Data Internet 1GB", category: "PULSA", price: 15000, stock: 500 },
-          { name: "KVision", category: "TV VOUCHER", price: 50000, stock: 100 },
-          { name: "MNC Vision", category: "TV VOUCHER", price: 100000, stock: 100 },
-          { name: "Nex Parabola", category: "TV VOUCHER", price: 60000, stock: 100 },
-          { name: "TransVision HD / Nusantara HD", category: "TV VOUCHER", price: 75000, stock: 100 },
-          { name: "IPTV Extreme", category: "IPTV", price: 85000, stock: 50 },
-          { name: "IPTV Erago", category: "IPTV", price: 95000, stock: 50 },
-        ];
-        const newProducts = {};
-        defaultProducts.forEach((p, index) => {
-          const id = Date.now() + index;
-          newProducts[id] = { ...p, id };
-        });
-        set(productsRef, newProducts);
+        setProducts({});
       }
     });
 
@@ -618,8 +593,11 @@ const PaymentTab = ({ products, storeInfo }) => {
                 onClick={() => handleProductClick(p.id)}
               >
                 <span className="service-name">{p.name}</span>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)', marginTop: 8 }}>
                   Rp {p.price.toLocaleString()}
+                </div>
+                <div style={{ fontSize: 11, color: p.stock > 0 ? 'var(--secondary)' : '#ef4444', marginTop: 4, fontWeight: 600 }}>
+                  Stok: {p.stock}
                 </div>
               </div>
             ))}
@@ -709,8 +687,16 @@ const SettingsTab = ({ products, storeInfo }) => {
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState(null);
 
-  const updateStoreInfo = (field, value) => {
-    update(ref(db, 'storeInfo'), { [field]: value });
+  // Local state for storeInfo to avoid flickering and allow 'Save' button
+  const [localStoreInfo, setLocalStoreInfo] = useState({ ...storeInfo });
+
+  useEffect(() => {
+    setLocalStoreInfo({ ...storeInfo });
+  }, [storeInfo]);
+
+  const handleUpdateStore = () => {
+    update(ref(db, 'storeInfo'), localStoreInfo);
+    alert('Informasi Kedai berhasil disimpan!');
   };
 
   const addProduct = () => {
@@ -741,6 +727,12 @@ const SettingsTab = ({ products, storeInfo }) => {
   const deleteProduct = (id) => {
     if (window.confirm('Hapus produk ini?')) {
       remove(ref(db, `products/${id}`));
+    }
+  };
+
+  const clearAllProducts = () => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus SELURUH daftar produk?')) {
+      remove(ref(db, 'products'));
     }
   };
 
@@ -791,32 +783,33 @@ const SettingsTab = ({ products, storeInfo }) => {
           <div className="form-group">
             <label>Nama Kedai</label>
             <input 
-              type="text" value={storeInfo.name} 
-              onChange={e => updateStoreInfo('name', e.target.value)} 
+              type="text" value={localStoreInfo.name} 
+              onChange={e => setLocalStoreInfo({ ...localStoreInfo, name: e.target.value })} 
             />
           </div>
           <div className="form-group">
             <label>Alamat Kedai</label>
             <input 
-              type="text" value={storeInfo.address} 
-              onChange={e => updateStoreInfo('address', e.target.value)} 
+              type="text" value={localStoreInfo.address} 
+              onChange={e => setLocalStoreInfo({ ...localStoreInfo, address: e.target.value })} 
             />
           </div>
           <div className="form-group">
             <label>Nomor Rekening</label>
             <input 
-              type="text" value={storeInfo.bankAccount} 
-              onChange={e => updateStoreInfo('bankAccount', e.target.value)} 
+              type="text" value={localStoreInfo.bankAccount} 
+              onChange={e => setLocalStoreInfo({ ...localStoreInfo, bankAccount: e.target.value })} 
             />
           </div>
           <div className="form-group">
             <label>Footer Kwitansi</label>
             <input 
-              type="text" value={storeInfo.footer} 
-              onChange={e => updateStoreInfo('footer', e.target.value)} 
+              type="text" value={localStoreInfo.footer} 
+              onChange={e => setLocalStoreInfo({ ...localStoreInfo, footer: e.target.value })} 
             />
           </div>
         </div>
+        <button onClick={handleUpdateStore} className="btn btn-primary" style={{ marginTop: 16, width: '100%' }}>Simpan Profil Kedai</button>
       </section>
       
       <section className="card" style={{ border: '1px solid #fee2e2' }}>
@@ -865,7 +858,10 @@ const SettingsTab = ({ products, storeInfo }) => {
             <option value="TV VOUCHER">TV VOUCHER</option>
             <option value="IPTV">IPTV</option>
           </select>
-          <button onClick={addProduct} className="btn btn-primary">Tambah Produk</button>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button onClick={addProduct} className="btn btn-primary" style={{ flex: 1 }}>Tambah Produk</button>
+            <button onClick={clearAllProducts} className="btn" style={{ background: '#fee2e2', color: '#991b1b' }}>Hapus Semua</button>
+          </div>
         </div>
         <table className="data-table">
           <thead>
