@@ -487,7 +487,7 @@ const PaymentTab = ({ products, storeInfo }) => {
   const [showReceipt, setShowReceipt] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
 
-  const selectedProduct = products.find(p => p.id === parseInt(formData.productId));
+  const selectedProduct = products.find(p => String(p.id) === String(formData.productId));
 
   const categories = [
     { name: 'PLN', icon: '⚡' },
@@ -610,79 +610,88 @@ const PaymentTab = ({ products, storeInfo }) => {
 
       {step === 3 && (
         <div className="fade-in">
-          <div className="card" style={{ marginBottom: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24, gap: 16 }}>
-              <button onClick={() => setStep(2)} style={{ background: '#f1f5f9', padding: '8px 12px', borderRadius: 8, fontWeight: 600 }}>← Kembali</button>
-              <h2>Detail Transaksi: {selectedProduct.name}</h2>
+          {!selectedProduct ? (
+            <div className="card">
+              <p>Terjadi kesalahan: Produk tidak ditemukan.</p>
+              <button onClick={() => setStep(1)} className="btn btn-primary" style={{ marginTop: 16 }}>Kembali ke Kategori</button>
             </div>
-            
-            <div className="grid">
-              <div className="form-group">
-                <label>Nama Pelanggan</label>
-                <input 
-                  type="text" value={formData.name} 
-                  onChange={e => setFormData({...formData, name: e.target.value})} 
-                  placeholder="Masukkan nama..."
-                />
-              </div>
-              <div className="form-group">
-                <label>Nomor Ponsel</label>
-                <input 
-                  type="text" value={formData.phone} 
-                  onChange={e => setFormData({...formData, phone: e.target.value})} 
-                  placeholder="0812..."
-                />
-              </div>
-              {(selectedProduct?.name === 'PLN Postpaid' || ['INTERNET', 'BPJS', 'TV VOUCHER'].includes(selectedCategory)) && (
-                <div className="form-group">
-                  <label>ID Pelanggan / Nomor Kontrak</label>
-                  <input 
-                    type="text" value={formData.customerId} 
-                    onChange={e => setFormData({...formData, customerId: e.target.value})} 
-                    placeholder="Masukkan ID..."
-                  />
+          ) : (
+            <>
+              <div className="card" style={{ marginBottom: 24 }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24, gap: 16 }}>
+                  <button onClick={() => setStep(2)} style={{ background: '#f1f5f9', padding: '8px 12px', borderRadius: 8, fontWeight: 600 }}>← Kembali</button>
+                  <h2>Detail Transaksi: {selectedProduct.name}</h2>
                 </div>
-              )}
-            </div>
-          </div>
+                
+                <div className="grid">
+                  <div className="form-group">
+                    <label>Nama Pelanggan</label>
+                    <input 
+                      type="text" value={formData.name} 
+                      onChange={e => setFormData({...formData, name: e.target.value})} 
+                      placeholder="Masukkan nama..."
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Nomor Ponsel</label>
+                    <input 
+                      type="text" value={formData.phone} 
+                      onChange={e => setFormData({...formData, phone: e.target.value})} 
+                      placeholder="0812..."
+                    />
+                  </div>
+                  {(selectedProduct?.name === 'PLN Postpaid' || ['INTERNET', 'BPJS', 'TV VOUCHER'].includes(selectedCategory)) && (
+                    <div className="form-group">
+                      <label>ID Pelanggan / Nomor Kontrak</label>
+                      <input 
+                        type="text" value={formData.customerId} 
+                        onChange={e => setFormData({...formData, customerId: e.target.value})} 
+                        placeholder="Masukkan ID..."
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
 
-          <div className="card">
-            <h3 style={{ marginBottom: 16 }}>Konfirmasi Pembayaran</h3>
-            <div style={{ padding: 24, background: '#f8fafc', borderRadius: 16, border: '1px solid var(--border-color)', marginBottom: 24 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h4 style={{ fontSize: 16, marginBottom: 4 }}>{selectedProduct.name}</h4>
-                  <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>
-                    Harga Satuan: Rp {selectedProduct.price.toLocaleString()}
-                  </p>
-                  <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
-                    Biaya Admin: Rp {ADMIN_FEE.toLocaleString()}
-                  </p>
+              <div className="card">
+                <h3 style={{ marginBottom: 16 }}>Konfirmasi Pembayaran</h3>
+                <div style={{ padding: 24, background: '#f8fafc', borderRadius: 16, border: '1px solid var(--border-color)', marginBottom: 24 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h4 style={{ fontSize: 16, marginBottom: 4 }}>{selectedProduct.name}</h4>
+                      <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>
+                        Harga Satuan: Rp {selectedProduct.price.toLocaleString()}
+                      </p>
+                      <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
+                        Biaya Admin: Rp {ADMIN_FEE.toLocaleString()}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>TOTAL PEMBAYARAN</p>
+                      <p style={{ fontSize: 28, fontWeight: 800, color: 'var(--primary)' }}>
+                        Rp {((formData.quantity * selectedProduct.price) + ADMIN_FEE).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="form-group" style={{ marginTop: 16, maxWidth: 120 }}>
+                    <label>Jumlah</label>
+                    <input 
+                      type="number" min="1" value={formData.quantity} 
+                      onChange={e => setFormData({...formData, quantity: parseInt(e.target.value) || 1})}
+                    />
+                  </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>TOTAL PEMBAYARAN</p>
-                  <p style={{ fontSize: 28, fontWeight: 800, color: 'var(--primary)' }}>
-                    Rp {((formData.quantity * selectedProduct.price) + ADMIN_FEE).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-              <div className="form-group" style={{ marginTop: 16, maxWidth: 120 }}>
-                <label>Jumlah</label>
-                <input 
-                  type="number" min="1" value={formData.quantity} 
-                  onChange={e => setFormData({...formData, quantity: parseInt(e.target.value) || 1})}
-                />
-              </div>
-            </div>
 
-            <button 
-              onClick={handlePayment}
-              className="btn btn-primary" 
-              style={{ width: '100%', padding: 16, fontSize: 16 }}
-            >
-              Bayar Sekarang & Cetak
-            </button>
-          </div>
+                <button 
+                  onClick={handlePayment}
+                  className="btn btn-primary" 
+                  style={{ width: '100%', padding: 16, fontSize: 16 }}
+                >
+                  Bayar Sekarang & Cetak
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
