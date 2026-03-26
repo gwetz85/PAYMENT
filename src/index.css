@@ -466,3 +466,28 @@ input:focus {
 .kwitansi-date {
   font-weight: 500;
 }
+
+/* Supermarket Receipt Styling */
+.market-receipt-box {
+  background: white;
+  width: 100%;
+  max-width: 320px; /* Thermal paper width approx 80mm */
+  margin: 0 auto;
+  padding: 20px;
+  color: #000;
+  font-family: 'Courier New', Courier, monospace; /* Classic thermal printer font */
+  border: 1px solid #ddd;
+}
+
+@media print {
+  .receipt-container {
+    max-width: none;
+    padding: 0;
+  }
+  .market-receipt-box {
+    border: none;
+    max-width: none;
+    width: 100%;
+    padding: 10px;
+  }
+}

@@ -111,7 +111,14 @@ const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout }) => (
           className={`nav-item ${activeTab === 'pembayaran' ? 'active' : ''}`}
           onClick={() => setActiveTab('pembayaran')}
         >
-          <span>🛒</span> Pembayaran
+          <span>🌐</span> PPOB & Tagihan
+        </button>
+
+        <button 
+          className={`nav-item ${activeTab === 'harian' ? 'active' : ''}`}
+          onClick={() => setActiveTab('harian')}
+        >
+          <span>🛒</span> Transaksi Harian
         </button>
 
         {currentUser.role === 'ADMIN' && (
@@ -269,10 +276,20 @@ function App() {
         {activeTab === 'pembayaran' && (
           <div className="page fade-in">
             <header className="page-header">
-              <h1 className="page-title">Pembayaran</h1>
+              <h1 className="page-title">PPOB & Tagihan</h1>
               <p className="page-subtitle">Pilih layanan dan lakukan transaksi</p>
             </header>
             <PaymentTab products={Object.values(products || {})} storeInfo={storeInfo} />
+          </div>
+        )}
+
+        {activeTab === 'harian' && (
+          <div className="page fade-in">
+            <header className="page-header">
+              <h1 className="page-title">Transaksi Harian</h1>
+              <p className="page-subtitle">Penjualan kebutuhan pokok & barang harian</p>
+            </header>
+            <DailyTransactionTab products={Object.values(products || {})} storeInfo={storeInfo} />
           </div>
         )}
         
@@ -708,6 +725,199 @@ const PaymentTab = ({ products, storeInfo }) => {
   );
 };
 
+const DailyTransactionTab = ({ products, storeInfo }) => {
+  const [cart, setCart] = useState([]);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [currentTicket, setCurrentTicket] = useState(null);
+  const [customerName, setCustomerName] = useState('');
+
+  const harianProducts = products.filter(p => p.category === 'HARIAN');
+
+  const addToCart = (product) => {
+    const existing = cart.find(item => item.id === product.id);
+    if (existing) {
+      setCart(cart.map(item => 
+        item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+      ));
+    } else {
+      setCart([...cart, { ...product, quantity: 1 }]);
+    }
+  };
+
+  const removeFromCart = (id) => {
+    setCart(cart.filter(item => item.id !== id));
+  };
+
+  const updateQuantity = (id, q) => {
+    if (q < 1) return;
+    setCart(cart.map(item => 
+      item.id === id ? { ...item, quantity: q } : item
+    ));
+  };
+
+  const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+  const handleCheckout = async () => {
+    if (cart.length === 0) return;
+    
+    const ticket = {
+      id: "SHOP-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
+      customerName: customerName || "Pelanggan Umum",
+      items: cart,
+      total: total,
+      date: new Date().toLocaleString('id-ID'),
+      timestamp: Date.now(),
+      storeInfo: storeInfo,
+      category: 'HARIAN'
+    };
+
+    try {
+      // 1. Log Transaction
+      const transRef = ref(db, 'transactions');
+      await push(transRef, ticket);
+
+      // 2. Update Stocks
+      for (const item of cart) {
+        const productRef = ref(db, `products/${item.id}`);
+        await update(productRef, { stock: (item.stock || 0) - item.quantity });
+      }
+
+      setCurrentTicket(ticket);
+      setShowReceipt(true);
+      setCart([]);
+      setCustomerName('');
+    } catch (err) {
+      alert("Gagal memproses transaksi");
+    }
+  };
+
+  if (showReceipt) {
+    return <SupermarketReceipt ticket={currentTicket} onBack={() => setShowReceipt(false)} />;
+  }
+
+  return (
+    <div className="grid harian-layout" style={{ gridTemplateColumns: '1fr 350px', alignItems: 'start' }}>
+      <div className="card">
+        <h2 style={{ marginBottom: 20 }}>Daftar Barang</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16 }}>
+          {harianProducts.map(p => (
+            <div key={p.id} className="service-card" onClick={() => addToCart(p)} style={{ textAlign: 'left', padding: 15 }}>
+              <p style={{ fontWeight: 700, fontSize: 14 }}>{p.name}</p>
+              <p style={{ fontSize: 13, color: 'var(--primary)', marginTop: 4 }}>Rp {p.price.toLocaleString()}</p>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>Stok: {p.stock}</p>
+              <button className="btn btn-primary" style={{ marginTop: 8, padding: '4px 8px', fontSize: 11, width: '100%' }}>+ Tambah</button>
+            </div>
+          ))}
+          {harianProducts.length === 0 && <p style={{ color: 'var(--text-muted)' }}>Belum ada produk 'HARIAN'. Tambahkan di Pengaturan.</p>}
+        </div>
+      </div>
+
+      <div className="card" style={{ position: 'sticky', top: 20 }}>
+        <h2 style={{ marginBottom: 20 }}>Keranjang</h2>
+        <div className="form-group" style={{ marginBottom: 20 }}>
+          <label>Nama Pelanggan (Opsional)</label>
+          <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Pelanggan Umum" />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 400, overflowY: 'auto', marginBottom: 20, padding: 4 }}>
+          {cart.map(item => (
+            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 12, borderBottom: '1px solid #f1f5f9' }}>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 13, fontWeight: 600 }}>{item.name}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                  <input 
+                    type="number" 
+                    value={item.quantity} 
+                    onChange={e => updateQuantity(item.id, parseInt(e.target.value) || 1)}
+                    style={{ width: 50, padding: '2px 4px', fontSize: 12, border: '1px solid #ddd', borderRadius: 4 }} 
+                  />
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>x Rp {item.price.toLocaleString()}</span>
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontWeight: 700, fontSize: 13 }}>Rp {(item.price * item.quantity).toLocaleString()}</p>
+                <button onClick={() => removeFromCart(item.id)} style={{ color: '#ef4444', background: 'none', fontSize: 11, marginTop: 4 }}>Hapus</button>
+              </div>
+            </div>
+          ))}
+          {cart.length === 0 && <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px 0' }}>Keranjang kosong</p>}
+        </div>
+        <div style={{ borderTop: '2px solid var(--border-color)', paddingTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+            <span style={{ fontWeight: 700 }}>Total</span>
+            <span style={{ fontWeight: 700, fontSize: 20, color: 'var(--primary)' }}>Rp {total.toLocaleString()}</span>
+          </div>
+          <button 
+            disabled={cart.length === 0}
+            onClick={handleCheckout}
+            className="btn btn-primary" 
+            style={{ width: '100%', padding: 14, opacity: cart.length === 0 ? 0.5 : 1 }}
+          >
+            Selesaikan & Cetak Struk
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SupermarketReceipt = ({ ticket, onBack }) => {
+  const handlePrint = () => {
+    window.print();
+  };
+
+  return (
+    <div className="receipt-container fade-in">
+       <div className="market-receipt-box">
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <h2 style={{ fontSize: 24, fontWeight: 800, margin: 0 }}>{ticket.storeInfo.name.toUpperCase()}</h2>
+            <p style={{ fontSize: 12, margin: '4px 0' }}>{ticket.storeInfo.address}</p>
+          </div>
+          
+          <div style={{ borderTop: '1px dashed #333', padding: '10px 0', fontSize: 12, textAlign: 'left' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>TGL: {ticket.date}</span>
+              <span>NO: {ticket.id}</span>
+            </div>
+            <p style={{ marginTop: 4 }}>PELANGGAN: {ticket.customerName}</p>
+          </div>
+
+          <div style={{ borderTop: '1px dashed #333', borderBottom: '1px dashed #333', padding: '15px 0', margin: '10px 0' }}>
+            <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse' }}>
+              <tbody>
+                {ticket.items.map((item, idx) => (
+                  <React.Fragment key={idx}>
+                    <tr>
+                      <td colSpan="3" style={{ fontWeight: 600, paddingBottom: 2 }}>{item.name}</td>
+                    </tr>
+                    <tr style={{ marginBottom: 10 }}>
+                      <td style={{ width: 100, paddingBottom: 8 }}>{item.quantity} x {item.price.toLocaleString()}</td>
+                      <td style={{ textAlign: 'right', paddingBottom: 8 }}>{(item.price * item.quantity).toLocaleString()}</td>
+                    </tr>
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 18, marginTop: 10 }}>
+            <span>TOTAL</span>
+            <span>Rp {ticket.total.toLocaleString()}</span>
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: 40, fontSize: 12 }}>
+            <p style={{ margin: 0 }}>{ticket.storeInfo.footer}</p>
+            <p style={{ marginTop: 8, fontSize: 10 }}>TERIMA KASIH ATAS KUNJUNGAN ANDA</p>
+          </div>
+       </div>
+
+       <div className="no-print" style={{ display: 'flex', gap: 12, marginTop: 24, justifyContent: 'center' }}>
+          <button onClick={onBack} className="btn" style={{ background: '#e2e8f0' }}>Kembali</button>
+          <button onClick={handlePrint} className="btn btn-primary">Cetak Struk</button>
+       </div>
+    </div>
+  );
+};
+
 const SettingsTab = ({ products, storeInfo }) => {
   const [newProduct, setNewProduct] = useState({ name: '', price: 0, category: 'PLN', stock: 100 });
   const [editingId, setEditingId] = useState(null);
@@ -883,6 +1093,7 @@ const SettingsTab = ({ products, storeInfo }) => {
             <option value="PULSA">PULSA</option>
             <option value="TV VOUCHER">TV VOUCHER</option>
             <option value="IPTV">IPTV</option>
+            <option value="HARIAN">HARIAN</option>
           </select>
           <div style={{ display: 'flex', gap: 12 }}>
             <button onClick={addProduct} className="btn btn-primary" style={{ flex: 1 }}>Tambah Produk</button>
@@ -917,6 +1128,7 @@ const SettingsTab = ({ products, storeInfo }) => {
                       <option value="PULSA">PULSA</option>
                       <option value="TV VOUCHER">TV VOUCHER</option>
                       <option value="IPTV">IPTV</option>
+                      <option value="HARIAN">HARIAN</option>
                     </select>
                   ) : (
                     <span className="badge badge-primary">{p.category}</span>
@@ -1101,6 +1313,9 @@ const TransactionHistoryTab = ({ transactions }) => {
   const [selectedTicket, setSelectedTicket] = useState(null);
 
   if (showReceipt && selectedTicket) {
+    if (selectedTicket.category === 'HARIAN') {
+      return <SupermarketReceipt ticket={selectedTicket} onBack={() => setShowReceipt(false)} />;
+    }
     return <Receipt ticket={selectedTicket} onBack={() => setShowReceipt(false)} />;
   }
 
