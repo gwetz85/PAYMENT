@@ -306,6 +306,8 @@ function App() {
 }
 
 // --- Specific Tabs Components ---
+const ADMIN_FEE = 2500;
+
 const DashboardTab = ({ transactions, users }) => {
   const totalRevenue = transactions.reduce((acc, t) => acc + (t.total || 0), 0);
   const totalTransactions = transactions.length;
@@ -520,7 +522,8 @@ const PaymentTab = ({ products, storeInfo }) => {
       productName: selectedProduct.name,
       price: selectedProduct.price,
       quantity: formData.quantity,
-      total: selectedProduct.price * formData.quantity,
+      adminFee: ADMIN_FEE,
+      total: (selectedProduct.price * formData.quantity) + ADMIN_FEE,
       date: new Date().toLocaleString('id-ID'),
       timestamp: Date.now(),
       storeInfo: storeInfo
@@ -652,10 +655,14 @@ const PaymentTab = ({ products, storeInfo }) => {
                   <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>
                     Harga Satuan: Rp {selectedProduct.price.toLocaleString()}
                   </p>
+                  <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
+                    Biaya Admin: Rp {ADMIN_FEE.toLocaleString()}
+                  </p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontSize: 24, fontWeight: 700, color: 'var(--primary)' }}>
-                    Rp {(formData.quantity * selectedProduct.price).toLocaleString()}
+                  <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>TOTAL PEMBAYARAN</p>
+                  <p style={{ fontSize: 28, fontWeight: 800, color: 'var(--primary)' }}>
+                    Rp {((formData.quantity * selectedProduct.price) + ADMIN_FEE).toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -963,7 +970,11 @@ const Receipt = ({ ticket, onBack }) => {
             <span>{ticket.productName}</span>
             <span>x{ticket.quantity}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 18, borderTop: '1px solid #000', paddingTop: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 12, color: '#333' }}>
+            <span>Biaya Admin</span>
+            <span>Rp {ticket.adminFee?.toLocaleString() || '2.500'}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 20, borderTop: '2px solid #000', paddingTop: 8 }}>
             <span>TOTAL</span>
             <span>Rp {ticket.total.toLocaleString()}</span>
           </div>
