@@ -904,6 +904,13 @@ const SupermarketReceipt = ({ ticket, onBack }) => {
             <span>Rp {ticket.total.toLocaleString()}</span>
           </div>
 
+          {ticket.status === 'LUNAS' && (
+            <div style={{ textAlign: 'center', marginTop: 15, border: '2px dashed #059669', color: '#059669', padding: 8, borderRadius: 8 }}>
+              <p style={{ margin: 0, fontWeight: 800 }}>LUNAS</p>
+              <p style={{ margin: 0, fontSize: 10 }}>Tgl Bayar: {ticket.paidAt}</p>
+            </div>
+          )}
+
           <div style={{ textAlign: 'center', marginTop: 40, fontSize: 12 }}>
             <p style={{ margin: 0 }}>{ticket.storeInfo.footer}</p>
             <p style={{ marginTop: 8, fontSize: 10 }}>TERIMA KASIH ATAS KUNJUNGAN ANDA</p>
@@ -1328,6 +1335,28 @@ const Receipt = ({ ticket, onBack }) => {
           <span className="total-value" style={{ fontSize: 22, fontWeight: 700 }}>{formattedTotal}</span>
         </div>
 
+        {ticket.status === 'LUNAS' && (
+          <div style={{ position: 'relative' }}>
+             <div style={{ 
+               position: 'absolute', 
+               left: 400, 
+               top: -80, 
+               border: '4px solid #059669', 
+               color: '#059669', 
+               padding: '10px 20px', 
+               fontWeight: 900, 
+               fontSize: 28, 
+               transform: 'rotate(-20deg)', 
+               borderRadius: 12,
+               opacity: 0.8,
+               textAlign: 'center'
+             }}>
+               LUNAS
+               <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>TGL: {ticket.paidAt}</div>
+             </div>
+          </div>
+        )}
+
         {/* Footer Section */}
         <div className="kwitansi-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div className="footer-left">
@@ -1368,6 +1397,19 @@ const TransactionHistoryTab = ({ transactions }) => {
     }
     if (window.confirm('Hapus riwayat transaksi ini?')) {
       remove(ref(db, `transactions/${fbKey}`));
+    }
+  };
+
+  const markAsLunas = (ticket) => {
+    if (window.confirm(`Tandai transaksi ${ticket.id} sebagai LUNAS?`)) {
+      update(ref(db, `transactions/${ticket.fbKey}`), { 
+        status: 'LUNAS',
+        paidAt: new Date().toLocaleString('id-ID')
+      }).then(() => {
+        alert("Transaksi berhasil ditandai LUNAS");
+      }).catch(() => {
+        alert("Gagal memperbarui status");
+      });
     }
   };
 
@@ -1425,6 +1467,9 @@ const TransactionHistoryTab = ({ transactions }) => {
                 </td>
                 <td>
                   <div style={{ display: 'flex', gap: 12 }}>
+                    {t.status !== 'LUNAS' && (
+                      <button onClick={() => markAsLunas(t)} style={{ color: '#059669', background: 'none', fontWeight: 600, fontSize: 13 }}>LUNAS</button>
+                    )}
                     <button onClick={() => handlePrint(t)} style={{ color: 'var(--primary)', background: 'none', fontWeight: 600, fontSize: 13 }}>Cetak</button>
                     <button onClick={() => deleteTransaction(t.fbKey)} style={{ color: '#ef4444', background: 'none', fontWeight: 600, fontSize: 13 }}>Hapus</button>
                   </div>
