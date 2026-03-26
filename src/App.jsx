@@ -221,6 +221,87 @@ const ArsipTab = ({ currentUser }) => {
 };
 
 
+const PembayaranOnlineTab = () => {
+  const [selectedService, setSelectedService] = useState('pln');
+  const [customerId, setCustomerId] = useState('');
+
+  const services = {
+    pln: { 
+      name: 'PLN POSTPAID', 
+      icon: '⚡', 
+      color: '#f59e0b',
+      url: 'https://www.sepulsa.com/transaction/pln?type=postpaid'
+    },
+    indihome: { 
+      name: 'INTERNET INDIHOME', 
+      icon: '🌐', 
+      color: '#ef4444',
+      url: 'https://live.finpay.id/widgetpg/001001'
+    }
+  };
+
+  const handleCheck = () => {
+    if (!customerId) {
+      alert("Masukkan ID Pelanggan terlebih dahulu");
+      return;
+    }
+    window.open(services[selectedService].url, '_blank');
+  };
+
+  return (
+    <div className="card fade-in">
+      <h2 style={{ marginBottom: 24, textAlign: 'left' }}>Pembayaran Online</h2>
+      
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginBottom: 32 }}>
+        {Object.entries(services).map(([key, svc]) => (
+          <div 
+            key={key}
+            onClick={() => setSelectedService(key)}
+            className="card" 
+            style={{ 
+              cursor: 'pointer',
+              border: selectedService === key ? `2px solid ${svc.color}` : '2px solid transparent',
+              background: selectedService === key ? `${svc.color}10` : '#f8fafc',
+              transition: 'all 0.2s',
+              textAlign: 'center',
+              padding: 24
+            }}
+          >
+            <div style={{ fontSize: 40, marginBottom: 16 }}>{svc.icon}</div>
+            <h3 style={{ fontSize: 16, fontWeight: 700 }}>{svc.name}</h3>
+          </div>
+        ))}
+      </div>
+
+      <div className="card" style={{ maxWidth: 500, margin: '0 auto', padding: 32, border: '1px solid #e2e8f0' }}>
+        <h4 style={{ marginBottom: 20, color: 'var(--text-muted)' }}>Cek Tagihan Realtime</h4>
+        <div className="form-group" style={{ textAlign: 'left' }}>
+          <label>ID Pelanggan ({services[selectedService].name})</label>
+          <input 
+            type="text" 
+            value={customerId} 
+            onChange={e => setCustomerId(e.target.value)}
+            placeholder="Masukkan ID Pelanggan" 
+            style={{ fontSize: 18, padding: 14 }}
+          />
+        </div>
+        
+        <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, marginBottom: 24, fontSize: 13, borderLeft: `4px solid ${services[selectedService].color}`, textAlign: 'left' }}>
+          💡 Klik tombol di bawah untuk melakukan pengecekan tagihan melalui portal resmi. Data ID Pelanggan akan tetap aman.
+        </div>
+
+        <button 
+          onClick={handleCheck}
+          className="btn btn-primary" 
+          style={{ width: '100%', padding: '16px', fontSize: 16, background: services[selectedService].color, borderColor: 'transparent', fontWeight: 700 }}
+        >
+          Lanjutkan Pengecekan 
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // --- Auth Components ---
 
 const AuthPage = ({ users, setUsers, setCurrentUser }) => {
@@ -337,6 +418,13 @@ const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout }) => (
           onClick={() => setActiveTab('harian')}
         >
           <span>🛒</span> Transaksi Harian
+        </button>
+
+        <button 
+          className={`nav-item ${activeTab === 'online' ? 'active' : ''}`}
+          onClick={() => setActiveTab('online')}
+        >
+          <span>💳</span> Pembayaran Online
         </button>
 
         {currentUser.role === 'ADMIN' && (
@@ -549,6 +637,16 @@ function App() {
               <p className="page-subtitle">Daftar seluruh transaksi yang dilakukan</p>
             </header>
             <TransactionHistoryTab transactions={transactions} />
+          </div>
+        )}
+
+        {activeTab === 'online' && (
+          <div className="page fade-in">
+            <header className="page-header">
+              <h1 className="page-title">Pembayaran Online</h1>
+              <p className="page-subtitle">Pengecekan tagihan pascabayar & internet real-time</p>
+            </header>
+            <PembayaranOnlineTab />
           </div>
         )}
 
