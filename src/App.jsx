@@ -176,7 +176,7 @@ function App() {
     footer: "Terima kasih telah belanja di Toko-KU!"
   });
   const [products, setProducts] = useState({});
-  const [transactions, setTransactions] = useState({});
+  const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
     // 1. Sync Users
