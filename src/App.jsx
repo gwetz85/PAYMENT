@@ -222,7 +222,15 @@ function App() {
     const transRef = ref(db, 'transactions');
     onValue(transRef, (snapshot) => {
       const data = snapshot.val();
-      if (data) setTransactions(data);
+      if (data) {
+        const transList = Object.entries(data).map(([key, val]) => ({
+          ...val,
+          fbKey: key
+        }));
+        setTransactions(transList);
+      } else {
+        setTransactions([]);
+      }
     });
 
     // 5. Auth Session
@@ -254,7 +262,7 @@ function App() {
               <h1 className="page-title">Ringkasan Dashboard</h1>
               <p className="page-subtitle">Ringkasan performa penjualan Toko-KU</p>
             </header>
-            <DashboardTab transactions={Object.values(transactions || {})} users={Object.values(users || {})} />
+            <DashboardTab transactions={transactions} users={Object.values(users || {})} />
           </div>
         )}
         
@@ -297,7 +305,7 @@ function App() {
               <h1 className="page-title">Riwayat Transaksi</h1>
               <p className="page-subtitle">Daftar seluruh transaksi yang dilakukan</p>
             </header>
-            <TransactionHistoryTab transactions={Object.values(transactions || {})} />
+            <TransactionHistoryTab transactions={transactions} />
           </div>
         )}
       </main>
@@ -1008,9 +1016,13 @@ const Receipt = ({ ticket, onBack }) => {
 const TransactionHistoryTab = ({ transactions }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const deleteTransaction = (id) => {
+  const deleteTransaction = (fbKey) => {
+    if (!fbKey) {
+      alert("Gagal menghapus: Key tidak ditemukan");
+      return;
+    }
     if (window.confirm('Hapus riwayat transaksi ini?')) {
-      remove(ref(db, `transactions/${id}`));
+      remove(ref(db, `transactions/${fbKey}`));
     }
   };
 
@@ -1062,7 +1074,7 @@ const TransactionHistoryTab = ({ transactions }) => {
                   Rp {t.total.toLocaleString()}
                 </td>
                 <td>
-                  <button onClick={() => deleteTransaction(t.id)} style={{ color: '#ef4444', background: 'none', fontWeight: 600, fontSize: 13 }}>Hapus</button>
+                  <button onClick={() => deleteTransaction(t.fbKey)} style={{ color: '#ef4444', background: 'none', fontWeight: 600, fontSize: 13 }}>Hapus</button>
                 </td>
               </tr>
             ))
