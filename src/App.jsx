@@ -7,10 +7,15 @@ import './index.css';
 const ArsipTab = ({ currentUser }) => {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState('');
-  const [viewerUrl, setViewerUrl] = useState(null);
-  const [editingKey, setEditingKey] = useState(null);
-  const [tempNote, setTempNote] = useState('');
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [viewingItem, setViewingItem] = useState(null);
+  const [editingItem, setEditingItem] = useState(null);
+  const [uploadForm, setUploadForm] = useState({ 
+    dataName: '', 
+    type: '', 
+    date: new Date().toISOString().split('T')[0], 
+    file: null 
+  });
 
   useEffect(() => {
     const archiveRef = ref(db, `user_archives/${currentUser.id}`);
@@ -25,133 +30,184 @@ const ArsipTab = ({ currentUser }) => {
     return () => unsubscribe();
   }, [currentUser.id]);
 
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      alert("Ukuran file maksimal 2MB");
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.size > 2 * 1024 * 1024) {
+      alert("Maksimal 2MB");
+      return;
+    }
+    setUploadForm({ ...uploadForm, file });
+  };
+
+  const submitUpload = async () => {
+    if (!uploadForm.dataName || !uploadForm.type || !uploadForm.date || !uploadForm.file) {
+      alert("Mohon lengkapi seluruh data dan pilih file");
       return;
     }
 
     setUploading(true);
-    setError('');
-    const fileName = `${Date.now()}_${file.name}`;
+    const fileName = `${Date.now()}_${uploadForm.file.name}`;
     const storageRef = sRef(storage, `archives/${currentUser.id}/${fileName}`);
 
     try {
-      await uploadBytes(storageRef, file);
+      await uploadBytes(storageRef, uploadForm.file);
       const downloadURL = await getDownloadURL(storageRef);
+      
       const archiveRef = ref(db, `user_archives/${currentUser.id}`);
       await push(archiveRef, {
-        name: file.name,
+        dataName: uploadForm.dataName,
+        type: uploadForm.type,
+        transactionDate: uploadForm.date,
         url: downloadURL,
         storagePath: `archives/${currentUser.id}/${fileName}`,
         timestamp: Date.now(),
-        date: new Date().toLocaleString('id-ID'),
-        note: ''
+        uploaddate: new Date().toLocaleString('id-ID')
       });
+
       setUploading(false);
+      setShowUploadModal(false);
+      setUploadForm({ dataName: '', type: '', date: new Date().toISOString().split('T')[0], file: null });
+      alert("Arsip berhasil disimpan!");
     } catch (err) {
-      setError("Gagal mengupload file. Pastikan Storage sudah diatur.");
+      alert("Gagal mengupload. Periksa koneksi atau Firebase rules.");
       setUploading(false);
     }
   };
 
+  const handleEdit = async () => {
+     if (!editingItem.dataName || !editingItem.type || !editingItem.transactionDate) return;
+     await update(ref(db, `user_archives/${currentUser.id}/${editingItem.fbKey}`), {
+       dataName: editingItem.dataName,
+       type: editingItem.type,
+       transactionDate: editingItem.transactionDate
+     });
+     setEditingItem(null);
+     alert("Data berhasil diperbarui");
+  };
+
   const deleteFile = async (item) => {
-    if (window.confirm("Hapus file ini dari arsip?")) {
+    if (window.confirm("Hapus arsip ini?")) {
       try {
         const storageRef = sRef(storage, item.storagePath);
         await deleteObject(storageRef);
         await remove(ref(db, `user_archives/${currentUser.id}/${item.fbKey}`));
-      } catch (err) {
-        alert("Gagal menghapus file");
-      }
+      } catch (err) { alert("Gagal menghapus"); }
     }
-  };
-
-  const startEdit = (item) => {
-    setEditingKey(item.fbKey);
-    setTempNote(item.note || '');
-  };
-
-  const saveNote = (fbKey) => {
-    update(ref(db, `user_archives/${currentUser.id}/${fbKey}`), { note: tempNote });
-    setEditingKey(null);
   };
 
   return (
     <div className="card">
-      {/* File Viewer Modal */}
-      {viewerUrl && (
-        <div className="modal-overlay" onClick={() => setViewerUrl(null)} style={{ 
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-          background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', 
-          alignItems: 'center', justifyContent: 'center', padding: 20 
-        }}>
-          <div style={{ position: 'relative', maxWidth: '90%', maxHeight: '90%' }}>
-            <button style={{ position: 'absolute', top: -40, right: 0, color: 'white', background: 'none', fontSize: 24 }}>✕ Tutup</button>
-            <img src={viewerUrl} alt="Preview" style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: 8, boxShadow: '0 0 20px rgba(0,0,0,0.5)' }} />
+      <div style={{ marginBottom: 24 }}>
+        <button onClick={() => setShowUploadModal(true)} className="btn btn-primary" style={{ padding: '12px 24px' }}>
+          ＋ Tambah Arsip Baru
+        </button>
+      </div>
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div className="card" style={{ width: '100%', maxWidth: 500, padding: 24 }}>
+            <h2 style={{ marginBottom: 20 }}>Upload Arsip Transaksi</h2>
+            <div className="form-group">
+              <label>Data Transaksi</label>
+              <input type="text" value={uploadForm.dataName} onChange={e => setUploadForm({...uploadForm, dataName: e.target.value})} placeholder="Contoh: Pembelian Beras Toko ABC" />
+            </div>
+            <div className="form-group">
+              <label>Jenis Transaksi</label>
+              <input type="text" value={uploadForm.type} onChange={e => setUploadForm({...uploadForm, type: e.target.value})} placeholder="Contoh: Pengeluaran / Pemasukan" />
+            </div>
+            <div className="form-group">
+              <label>Tanggal Transaksi</label>
+              <input type="date" value={uploadForm.date} onChange={e => setUploadForm({...uploadForm, date: e.target.value})} />
+            </div>
+            <div className="form-group">
+              <label>Pilih File (Gambar)</label>
+              <input type="file" accept="image/*" onChange={handleFileChange} />
+            </div>
+            <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+              <button disabled={uploading} onClick={submitUpload} className="btn btn-primary" style={{ flex: 1 }}>{uploading ? 'Mengupload...' : 'Simpan Arsip'}</button>
+              <button disabled={uploading} onClick={() => setShowUploadModal(false)} className="btn" style={{ flex: 1, background: '#f1f5f9' }}>Batal</button>
+            </div>
           </div>
         </div>
       )}
 
-      <div style={{ marginBottom: 24, padding: 20, border: '2px dashed #ddd', borderRadius: 12, textAlign: 'center' }}>
-        <h3 style={{ marginBottom: 10 }}>Upload Bukti Baru</h3>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>Format: Gambar (JPG/PNG), Maksimal 2MB</p>
-        <div style={{ position: 'relative' }}>
-          <input type="file" id="fileInput" onChange={handleFileUpload} style={{ display: 'none' }} accept="image/*" disabled={uploading} />
-          <button onClick={() => document.getElementById('fileInput').click()} className="btn btn-primary" disabled={uploading}>
-            {uploading ? 'Sedang Mengupload...' : 'Pilih File Gambar'}
-          </button>
+      {/* View Modal */}
+      {viewingItem && (
+        <div className="modal-overlay" onClick={() => setViewingItem(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div className="card" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 700, padding: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+               <h2>Detail Arsip</h2>
+               <button onClick={() => setViewingItem(null)} style={{ background: 'none', fontSize: 20 }}>✕</button>
+            </div>
+            <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20, textAlign: 'left' }}>
+               <div>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Data Transaksi</p>
+                  <p style={{ fontWeight: 700 }}>{viewingItem.dataName}</p>
+               </div>
+               <div>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Jenis Transaksi</p>
+                  <p style={{ fontWeight: 700 }}>{viewingItem.type}</p>
+               </div>
+               <div>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Tanggal Transaksi</p>
+                  <p style={{ fontWeight: 700 }}>{viewingItem.transactionDate}</p>
+               </div>
+               <div>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Waktu Upload</p>
+                  <p style={{ fontWeight: 700 }}>{viewingItem.uploaddate}</p>
+               </div>
+            </div>
+            <div style={{ border: '2px dashed #ddd', borderRadius: 12, overflow: 'hidden', textAlign: 'center' }}>
+               <img src={viewingItem.url} style={{ maxWidth: '100%', maxHeight: '50vh' }} />
+            </div>
+          </div>
         </div>
-        {error && <p style={{ color: '#ef4444', marginTop: 12, fontSize: 13 }}>{error}</p>}
-      </div>
+      )}
 
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+      {/* Edit Modal */}
+      {editingItem && (
+        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div className="card" style={{ width: '100%', maxWidth: 500, padding: 24 }}>
+            <h2 style={{ marginBottom: 20 }}>Edit Data Arsip</h2>
+            <div className="form-group">
+              <label>Data Transaksi</label>
+              <input type="text" value={editingItem.dataName} onChange={e => setEditingItem({...editingItem, dataName: e.target.value})} />
+            </div>
+            <div className="form-group">
+              <label>Jenis Transaksi</label>
+              <input type="text" value={editingItem.type} onChange={e => setEditingItem({...editingItem, type: e.target.value})} />
+            </div>
+            <div className="form-group">
+              <label>Tanggal Transaksi</label>
+              <input type="date" value={editingItem.transactionDate} onChange={e => setEditingItem({...editingItem, transactionDate: e.target.value})} />
+            </div>
+            <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+              <button onClick={handleEdit} className="btn btn-primary" style={{ flex: 1 }}>Simpan Perubahan</button>
+              <button onClick={() => setEditingItem(null)} className="btn" style={{ flex: 1, background: '#f1f5f9' }}>Batal</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Archive Grid */}
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
         {files.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>Belum ada arsip tersimpan.</p>
+          <p style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Belum ada arsip.</p>
         ) : (
           files.sort((a,b) => b.timestamp - a.timestamp).map(item => (
-            <div key={item.fbKey} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-              <div 
-                style={{ height: 180, overflow: 'hidden', background: '#f8fafc', cursor: 'zoom-in' }} 
-                onClick={() => setViewerUrl(item.url)}
-              >
-                <img src={item.url} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div key={item.fbKey} className="card" style={{ padding: 0, overflow: 'hidden' }}>
+              <div style={{ height: 160, overflow: 'hidden', background: '#f8fafc' }}>
+                 <img src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
-              
-              <div style={{ padding: 15, flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                   <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}>{item.date}</p>
-                   <button onClick={() => deleteFile(item)} style={{ color: '#ef4444', background: 'none', fontSize: 11 }}>Hapus</button>
-                </div>
-
-                {editingKey === item.fbKey ? (
-                  <div style={{ marginTop: 10 }}>
-                    <textarea 
-                      value={tempNote} 
-                      onChange={e => setTempNote(e.target.value)}
-                      placeholder="Tambahkan keterangan..."
-                      style={{ width: '100%', padding: 8, fontSize: 12, borderRadius: 6, border: '1px solid var(--primary)', minHeight: 60 }}
-                    />
-                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                      <button onClick={() => saveNote(item.fbKey)} className="btn btn-primary" style={{ flex: 1, padding: 6, fontSize: 11 }}>Simpan</button>
-                      <button onClick={() => setEditingKey(null)} className="btn" style={{ flex: 1, padding: 6, fontSize: 11, background: '#f1f5f9' }}>Batal</button>
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ marginTop: 10 }}>
-                    <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: item.note ? 'normal' : 'italic', minHeight: 20 }}>
-                      {item.note || 'Tidak ada keterangan...'}
-                    </p>
-                    <button 
-                      onClick={() => startEdit(item)} 
-                      style={{ marginTop: 10, color: 'var(--primary)', background: 'none', fontSize: 12, fontWeight: 600, padding: 0 }}
-                    >
-                      ✎ Edit Keterangan
-                    </button>
-                  </div>
-                )}
+              <div style={{ padding: 16 }}>
+                 <h4 style={{ fontSize: 15, marginBottom: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.dataName}</h4>
+                 <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>{item.type} • {item.transactionDate}</p>
+                 <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => setViewingItem(item)} className="btn" style={{ flex: 1, fontSize: 12, padding: '6px', background: '#f1f5f9' }}>Lihat</button>
+                    <button onClick={() => setEditingItem(item)} className="btn" style={{ flex: 1, fontSize: 12, padding: '6px', background: '#f1f5f9' }}>Edit</button>
+                    <button onClick={() => deleteFile(item)} className="btn" style={{ flex: 1, fontSize: 12, padding: '6px', background: '#fee2e2', color: '#ef4444' }}>Hapus</button>
+                 </div>
               </div>
             </div>
           ))
