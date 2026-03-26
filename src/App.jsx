@@ -754,6 +754,35 @@ const SettingsTab = ({ products, storeInfo }) => {
     }
   };
 
+  const resetAllData = () => {
+    if (window.confirm('PERINGATAN KRITIS: Anda akan menghapus SELURUH data aplikasi (Transaksi, Produk, dan User Petugas). Tindakan ini tidak dapat dibatalkan!')) {
+      const confirmCode = window.prompt('Ketik "RESET TOTAL" untuk konfirmasi:');
+      if (confirmCode === 'RESET TOTAL') {
+        // 1. Remove Transactions
+        remove(ref(db, 'transactions'));
+        
+        // 2. Remove Products (will be re-seeded or empty)
+        remove(ref(db, 'products'));
+        
+        // 3. Remove Users EXCEPT Admin
+        const usersRef = ref(db, 'users');
+        onValue(usersRef, (snapshot) => {
+          const users = snapshot.val();
+          if (users) {
+            Object.keys(users).forEach(id => {
+              if (id !== 'admin') {
+                remove(ref(db, `users/${id}`));
+              }
+            });
+          }
+        }, { onlyOnce: true });
+
+        alert('Aplikasi telah berhasil direset ke pengaturan awal.');
+        window.location.reload(); // Reload to refresh state
+      }
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <section className="card">
@@ -803,6 +832,20 @@ const SettingsTab = ({ products, storeInfo }) => {
             style={{ background: '#ef4444', color: 'white', padding: '10px 20px' }}
           >
             Hapus Semua Transaksi
+          </button>
+        </div>
+
+        <div style={{ background: '#fff1f1', padding: 20, borderRadius: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+          <div>
+            <h4 style={{ color: '#991b1b', marginBottom: 4 }}>Reset Total Aplikasi</h4>
+            <p style={{ fontSize: 14, color: '#991b1b', opacity: 0.8 }}>Hapus seluruh Transaksi, Produk, dan Akun Petugas.</p>
+          </div>
+          <button 
+            onClick={resetAllData} 
+            className="btn" 
+            style={{ background: '#7f1d1d', color: 'white', padding: '10px 20px' }}
+          >
+            Reset Total Sekarang
           </button>
         </div>
       </section>
