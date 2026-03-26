@@ -1335,33 +1335,37 @@ const Receipt = ({ ticket, onBack }) => {
           <span className="total-value" style={{ fontSize: 22, fontWeight: 700 }}>{formattedTotal}</span>
         </div>
 
-        {ticket.status === 'LUNAS' && (
-          <div style={{ position: 'relative' }}>
-             <div style={{ 
-               position: 'absolute', 
-               left: 400, 
-               top: -80, 
-               border: '4px solid #059669', 
-               color: '#059669', 
-               padding: '10px 20px', 
-               fontWeight: 900, 
-               fontSize: 28, 
-               transform: 'rotate(-20deg)', 
-               borderRadius: 12,
-               opacity: 0.8,
-               textAlign: 'center'
-             }}>
-               LUNAS
-               <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>TGL: {ticket.paidAt}</div>
-             </div>
-          </div>
-        )}
-
         {/* Footer Section */}
         <div className="kwitansi-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div className="footer-left">
             <p className="perhatian-label" style={{ fontWeight: 700, fontStyle: 'italic', marginBottom: 5 }}>Perhatian :</p>
-            <div className="perhatian-box" style={{ width: 350, height: 100, border: '1.5px solid #000' }}></div>
+            <div className="perhatian-box" style={{ 
+              width: 350, 
+              height: 100, 
+              border: '1.5px solid #000',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative'
+            }}>
+               {ticket.status === 'LUNAS' && (
+                 <div style={{ 
+                   border: '3px solid #059669', 
+                   color: '#059669', 
+                   padding: '5px 15px', 
+                   fontWeight: 900, 
+                   fontSize: 24, 
+                   transform: 'rotate(-5deg)', 
+                   borderRadius: 8,
+                   opacity: 0.8,
+                   textAlign: 'center',
+                   backgroundColor: 'rgba(255, 255, 255, 0.8)'
+                 }}>
+                   LUNAS
+                   <div style={{ fontSize: 10, fontWeight: 700, marginTop: 2 }}>TGL: {ticket.paidAt}</div>
+                 </div>
+               )}
+            </div>
           </div>
           
           <div className="footer-right" style={{ textAlign: 'right' }}>
