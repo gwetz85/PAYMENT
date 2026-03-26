@@ -466,26 +466,26 @@ const UserManagementTab = ({ users }) => {
               <td>
                 <div style={{ display: 'flex', gap: 12 }}>
                   {u.id !== 'admin' && (
-                    <>
-                      <button 
-                        onClick={() => toggleStatus(u.id, u.active)}
-                        style={{ color: u.active ? '#92400e' : '#065f46', background: 'none', fontWeight: 600, fontSize: 13 }}
-                      >
-                        {u.active ? 'Nonaktifkan' : 'Aktifkan'}
-                      </button>
-                      <button 
-                        onClick={() => handleResetPassword(u.id, u.name)}
-                        style={{ color: 'var(--accent)', background: 'none', fontWeight: 600, fontSize: 13 }}
-                      >
-                        Ganti Sandi
-                      </button>
-                      <button 
-                        onClick={() => deleteUser(u.id)}
-                        style={{ color: '#ef4444', background: 'none', fontWeight: 600, fontSize: 13 }}
-                      >
-                        Hapus
-                      </button>
-                    </>
+                    <button 
+                      onClick={() => toggleStatus(u.id, u.active)}
+                      style={{ color: u.active ? '#92400e' : '#065f46', background: 'none', fontWeight: 600, fontSize: 13 }}
+                    >
+                      {u.active ? 'Nonaktifkan' : 'Aktifkan'}
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => handleResetPassword(u.id, u.name)}
+                    style={{ color: 'var(--accent)', background: 'none', fontWeight: 600, fontSize: 13 }}
+                  >
+                    Ganti Sandi
+                  </button>
+                  {u.id !== 'admin' && (
+                    <button 
+                      onClick={() => deleteUser(u.id)}
+                      style={{ color: '#ef4444', background: 'none', fontWeight: 600, fontSize: 13 }}
+                    >
+                      Hapus
+                    </button>
                   )}
                 </div>
               </td>
@@ -744,6 +744,16 @@ const SettingsTab = ({ products, storeInfo }) => {
     }
   };
 
+  const resetTransactions = () => {
+    if (window.confirm('PERINGATAN: Hapus semua data transaksi? Tindakan ini tidak dapat dibatalkan.')) {
+      const confirmCode = window.prompt('Ketik "HAPUS" untuk konfirmasi:');
+      if (confirmCode === 'HAPUS') {
+        remove(ref(db, 'transactions'));
+        alert('Semua data transaksi telah dihapus.');
+      }
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <section className="card">
@@ -777,6 +787,23 @@ const SettingsTab = ({ products, storeInfo }) => {
               onChange={e => updateStoreInfo('footer', e.target.value)} 
             />
           </div>
+        </div>
+      </section>
+      
+      <section className="card" style={{ border: '1px solid #fee2e2' }}>
+        <h2 style={{ marginBottom: 16, color: '#991b1b' }}>Pengaturan Sistem & Data</h2>
+        <div style={{ background: '#fff1f1', padding: 20, borderRadius: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h4 style={{ color: '#991b1b', marginBottom: 4 }}>Reset Data Transaksi</h4>
+            <p style={{ fontSize: 14, color: '#991b1b', opacity: 0.8 }}>Hapus seluruh riwayat transaksi secara permanen.</p>
+          </div>
+          <button 
+            onClick={resetTransactions} 
+            className="btn" 
+            style={{ background: '#ef4444', color: 'white', padding: '10px 20px' }}
+          >
+            Hapus Semua Transaksi
+          </button>
         </div>
       </section>
 
