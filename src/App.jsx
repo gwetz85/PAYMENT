@@ -324,6 +324,15 @@ const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout }) => (
         PASAR<span>KU</span>
       </div>
       <div className="nav-links">
+        {currentUser.role === 'ADMIN' && (
+          <button 
+            className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            <span>📊</span> Ringkasan
+          </button>
+        )}
+
         <button 
           className={`nav-item ${activeTab === 'pembayaran' ? 'active' : ''}`}
           onClick={() => setActiveTab('pembayaran')}
@@ -340,12 +349,6 @@ const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout }) => (
 
         {currentUser.role === 'ADMIN' && (
           <>
-            <button 
-              className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-              onClick={() => setActiveTab('dashboard')}
-            >
-              <span>📊</span> Ringkasan
-            </button>
             <button 
               className={`nav-item ${activeTab === 'pengaturan' ? 'active' : ''}`}
               onClick={() => setActiveTab('pengaturan')}
