@@ -220,168 +220,6 @@ const ArsipTab = ({ currentUser }) => {
   );
 };
 
-
-const PembayaranOnlineTab = () => {
-  const [selectedService, setSelectedService] = useState('pln');
-  const [customerId, setCustomerId] = useState('');
-  const [showWidget, setShowWidget] = useState(false);
-
-  const services = {
-    pln: { 
-      name: 'PLN POSTPAID', 
-      icon: '⚡', 
-      color: '#f59e0b',
-      url: 'https://www.sepulsa.com/transaction/pln?type=postpaid'
-    },
-    indihome: { 
-      name: 'INDIHOME / TELKOM', 
-      icon: '🌐', 
-      color: '#ef4444',
-      url: 'https://live.finpay.id/widgetpg/001001'
-    }
-  };
-
-  return (
-    <div className="card fade-in" style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
-       {!showWidget ? (
-         <>
-           <h2 style={{ marginBottom: 24, textAlign: 'left' }}>Pembayaran Online</h2>
-           <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginBottom: 32 }}>
-             {Object.entries(services).map(([key, svc]) => (
-               <div 
-                 key={key}
-                 onClick={() => { setSelectedService(key); setCustomerId(''); }}
-                 className="card" 
-                 style={{ 
-                   cursor: 'pointer',
-                   border: selectedService === key ? `2px solid ${svc.color}` : '2px solid transparent',
-                   background: selectedService === key ? `${svc.color}10` : '#f8fafc',
-                   transition: 'all 0.2s',
-                   textAlign: 'center',
-                   padding: 24
-                 }}
-               >
-                 <div style={{ fontSize: 40, marginBottom: 16 }}>{svc.icon}</div>
-                 <h3 style={{ fontSize: 16, fontWeight: 700 }}>{svc.name}</h3>
-               </div>
-             ))}
-           </div>
-
-           <div className="card" style={{ maxWidth: 500, margin: '0 auto', padding: 32, border: '1px solid #e2e8f0', textAlign: 'center', width: '100%' }}>
-             <h4 style={{ marginBottom: 20, color: 'var(--text-muted)' }}>ID / Nomor Pelanggan</h4>
-             <div className="form-group" style={{ textAlign: 'left' }}>
-               <input 
-                 type="text" 
-                 value={customerId} 
-                 onChange={e => setCustomerId(e.target.value)}
-                 placeholder="Masukkan ID Pelanggan" 
-                 style={{ fontSize: 18, padding: 14 }}
-               />
-             </div>
-             
-             <button 
-               onClick={() => {
-                 if(!customerId) return alert("ID Pelanggan wajib diisi");
-                 setShowWidget(true);
-               }}
-               className="btn btn-primary" 
-               style={{ width: '100%', padding: '16px', fontSize: 16, background: services[selectedService].color, border: 'none', fontWeight: 700 }}
-             >
-               Cek Tagihan Realtime
-             </button>
-           </div>
-         </>
-       ) : (
-         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 20 }}>
-            {/* Header Terintegrasi */}
-            <div style={{ 
-              background: 'white', 
-              padding: '20px 24px', 
-              borderRadius: 16, 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                 <button 
-                   onClick={() => setShowWidget(false)} 
-                   className="btn" 
-                   style={{ background: '#f1f5f9', width: 40, height: 40, borderRadius: '50%', padding: 0, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                 >
-                   <span style={{ fontSize: 20 }}>←</span>
-                 </button>
-                 <div>
-                    <h3 style={{ margin: 0, fontSize: 18, color: 'var(--primary)' }}>{services[selectedService].name}</h3>
-                    <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)' }}>ID: <strong>{customerId}</strong></p>
-                 </div>
-              </div>
-              <button 
-                onClick={() => window.open(services[selectedService].url, '_blank')} 
-                className="btn" 
-                style={{ fontSize: 12, border: '1px solid #e2e8f0', background: 'white', color: 'var(--text-muted)', borderRadius: 8, padding: '8px 12px' }}
-              >
-                🌐 Buka Eksternal
-              </button>
-            </div>
-            
-            {/* Kontainer Portal Centered & Scaled */}
-            <div style={{ 
-              flex: 1, 
-              background: '#f8fafc', // Light gray bg for "app" feel
-              borderRadius: 24, 
-              overflow: 'hidden', 
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
-              padding: '20px',
-              minHeight: 700,
-              position: 'relative'
-            }}>
-               <div style={{ 
-                 width: '100%', 
-                 maxWidth: 500, // Mobile app width
-                 height: '100%',
-                 minHeight: 800,
-                 background: 'white',
-                 borderRadius: 16,
-                 overflow: 'hidden',
-                 border: '8px solid #334155', // Device frame style
-                 boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.25)',
-                 position: 'relative',
-                 display: 'flex',
-                 flexDirection: 'column'
-               }}>
-                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 0 }}>
-                     <div className="spinner" style={{ margin: '0 auto 16px' }}></div>
-                     <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Menghubungkan ke Portal...</p>
-                  </div>
-                  <iframe 
-                     src={services[selectedService].url} 
-                     style={{ 
-                       width: '125%', // Oversize for zooming
-                       height: '125%', 
-                       border: 'none', 
-                       position: 'relative', 
-                       zIndex: 1, 
-                       background: 'white',
-                       transform: 'scale(0.8)', // Scale down the oversized iframe to fill container with "zoom"
-                       transformOrigin: 'top left'
-                     }}
-                     title="Inquiry Portal"
-                  />
-               </div>
-               <p style={{ marginTop: 16, fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>
-                 💡 Tips: Gunakan kolom di dalam portal untuk mengecek tagihan sesuai ID yang diinput.
-               </p>
-            </div>
-         </div>
-       )}
-    </div>
-  );
-};
-
 // --- Auth Components ---
 
 const AuthPage = ({ users, setUsers, setCurrentUser }) => {
@@ -498,13 +336,6 @@ const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout }) => (
           onClick={() => setActiveTab('harian')}
         >
           <span>🛒</span> Transaksi Harian
-        </button>
-
-        <button 
-          className={`nav-item ${activeTab === 'online' ? 'active' : ''}`}
-          onClick={() => setActiveTab('online')}
-        >
-          <span>💳</span> Pembayaran Online
         </button>
 
         {currentUser.role === 'ADMIN' && (
@@ -709,7 +540,6 @@ function App() {
             <UserManagementTab users={Object.values(users || {})} />
           </div>
         )}
-
         {activeTab === 'riwayat' && currentUser.role === 'ADMIN' && (
           <div className="page fade-in">
             <header className="page-header">
@@ -717,16 +547,6 @@ function App() {
               <p className="page-subtitle">Daftar seluruh transaksi yang dilakukan</p>
             </header>
             <TransactionHistoryTab transactions={transactions} />
-          </div>
-        )}
-
-        {activeTab === 'online' && (
-          <div className="page fade-in">
-            <header className="page-header">
-              <h1 className="page-title">Pembayaran Online</h1>
-              <p className="page-subtitle">Pengecekan tagihan pascabayar & internet real-time</p>
-            </header>
-            <PembayaranOnlineTab />
           </div>
         )}
 
