@@ -234,10 +234,28 @@ const PembayaranOnlineTab = () => {
       url: 'https://www.sepulsa.com/transaction/pln?type=postpaid'
     },
     indihome: { 
-      name: 'INTERNET INDIHOME', 
+      name: 'INDIHOME / TELKOM', 
       icon: '🌐', 
       color: '#ef4444',
       url: 'https://live.finpay.id/widgetpg/001001'
+    },
+    pdam: {
+      name: 'AIR PDAM',
+      icon: '💧',
+      color: '#3b82f6',
+      url: 'https://www.sepulsa.com/transaction/pdam'
+    },
+    bpjs: {
+      name: 'BPJS KESEHATAN',
+      icon: '🏥',
+      color: '#059669',
+      url: 'https://www.sepulsa.com/transaction/bpjs'
+    },
+    tv: {
+      name: 'TV KABEL & INTERNET',
+      icon: '📺',
+      color: '#8b5cf6',
+      url: 'https://www.sepulsa.com/transaction/tv'
     }
   };
 
@@ -292,21 +310,53 @@ const PembayaranOnlineTab = () => {
            </div>
          </>
        ) : (
-         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, padding: '10px 0' }}>
-               <div>
-                  <h3 style={{ margin: 0 }}>Portal Pengecekan: {services[selectedService].name}</h3>
-                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>ID Pelanggan: {customerId}</p>
-               </div>
-               <button onClick={() => setShowWidget(false)} className="btn" style={{ background: '#f1f5f9' }}>✕ Kembali</button>
+         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 20 }}>
+            {/* Header Terintegrasi */}
+            <div style={{ 
+              background: 'white', 
+              padding: '20px 24px', 
+              borderRadius: 16, 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                 <button 
+                   onClick={() => setShowWidget(false)} 
+                   className="btn" 
+                   style={{ background: '#f1f5f9', width: 40, height: 40, borderRadius: '50%', padding: 0, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                 >
+                   <span style={{ fontSize: 20 }}>←</span>
+                 </button>
+                 <div>
+                    <h3 style={{ margin: 0, fontSize: 18, color: 'var(--primary)' }}>{services[selectedService].name}</h3>
+                    <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)' }}>ID: <strong>{customerId}</strong></p>
+                 </div>
+              </div>
+              <button 
+                onClick={() => window.open(services[selectedService].url, '_blank')} 
+                className="btn" 
+                style={{ fontSize: 12, border: '1px solid #e2e8f0', background: 'white', color: 'var(--text-muted)', borderRadius: 8, padding: '8px 12px' }}
+              >
+                🌐 Buka Eksternal
+              </button>
             </div>
             
-            <div style={{ flex: 1, border: '2px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', minHeight: 600, position: 'relative', background: '#f8fafc' }}>
-               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: 40, textAlign: 'center', zIndex: 0 }}>
-                  <div className="spinner" style={{ margin: '0 auto 20px' }}></div>
-                  <p>Memuat Portal Resmi...</p>
-                  <p style={{ fontSize: 12, color: '#64748b', maxWidth: 400, margin: '10px auto' }}>Jika halaman tidak muncul (diblokir browser), silakan gunakan tombol di bawah:</p>
-                  <button onClick={() => window.open(services[selectedService].url, '_blank')} className="btn btn-primary" style={{ background: services[selectedService].color, border: 'none' }}>Buka di Jendela Baru</button>
+            {/* Kontainer Portal */}
+            <div style={{ 
+              flex: 1, 
+              background: 'white', 
+              borderRadius: 20, 
+              overflow: 'hidden', 
+              border: '2px solid #e2e8f0',
+              boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+              minHeight: 700,
+              position: 'relative'
+            }}>
+               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 0 }}>
+                  <div className="spinner" style={{ margin: '0 auto 16px' }}></div>
+                  <p style={{ color: 'var(--text-muted)' }}>Menghubungkan ke Portal Resmi...</p>
                </div>
                <iframe 
                   src={services[selectedService].url} 
@@ -340,7 +390,7 @@ const AuthPage = ({ users, setUsers, setCurrentUser }) => {
         setError('Akun Anda belum aktif. Mohon hubungi ADMIN.');
       } else {
         setCurrentUser(user);
-        localStorage.setItem('tokoku_current_user', JSON.stringify(user));
+        localStorage.setItem('pasarku_current_user', JSON.stringify(user));
       }
     } else {
       const userList = Object.values(users || {});
@@ -573,7 +623,7 @@ function App() {
     });
 
     // 5. Auth Session
-    const savedSession = localStorage.getItem('tokoku_current_user');
+    const savedSession = localStorage.getItem('pasarku_current_user');
     if (savedSession) setCurrentUser(JSON.parse(savedSession));
     
     setIsInitialized(true);
@@ -581,7 +631,7 @@ function App() {
 
   const handleLogout = () => {
     setCurrentUser(null);
-    localStorage.removeItem('tokoku_current_user');
+    localStorage.removeItem('pasarku_current_user');
     setActiveTab('pembayaran');
   };
 
