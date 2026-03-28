@@ -779,6 +779,15 @@ const PaymentTab = ({ products, storeInfo }) => {
     const currentAdminFee = selectedCategory === 'PULSA' ? 0 : ADMIN_FEE;
     const subtotal = selectedProduct.price * formData.quantity;
     
+    // BPJS Ketenagakerjaan Discount Logic
+    let discountPercentage = 0;
+    const isBPJSKetenagakerjaan = selectedProduct?.name?.toUpperCase().includes("BPJS KETENAGAKERJAAN");
+    if (isBPJSKetenagakerjaan) {
+      if ([1, 3, 6, 9].includes(formData.quantity)) discountPercentage = 50;
+      else if (formData.quantity === 12) discountPercentage = 37.5;
+    }
+    const discountAmount = subtotal * (discountPercentage / 100);
+
     const ticket = {
       id: "TRX-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
       customerName: formData.name,
@@ -788,7 +797,9 @@ const PaymentTab = ({ products, storeInfo }) => {
       price: selectedProduct.price,
       quantity: formData.quantity,
       adminFee: currentAdminFee,
-      total: subtotal + currentAdminFee,
+      discountPercentage: discountPercentage,
+      discountAmount: discountAmount,
+      total: (subtotal - discountAmount) + currentAdminFee,
       date: new Date().toLocaleString('id-ID'),
       timestamp: Date.now(),
       storeInfo: storeInfo
@@ -934,10 +945,38 @@ const PaymentTab = ({ products, storeInfo }) => {
                     <div style={{ textAlign: 'right' }}>
                       <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>TOTAL PEMBAYARAN</p>
                       <p style={{ fontSize: 28, fontWeight: 800, color: 'var(--primary)' }}>
-                        Rp {((formData.quantity * selectedProduct.price) + (selectedCategory === 'PULSA' ? 0 : ADMIN_FEE)).toLocaleString()}
+                        Rp {(() => {
+                          const subtotal = formData.quantity * selectedProduct.price;
+                          let disc = 0;
+                          if (selectedProduct?.name?.toUpperCase().includes("BPJS KETENAGAKERJAAN")) {
+                            if ([1, 3, 6, 9].includes(formData.quantity)) disc = 0.5;
+                            else if (formData.quantity === 12) disc = 0.375;
+                          }
+                          const admin = selectedCategory === 'PULSA' ? 0 : ADMIN_FEE;
+                          return (subtotal * (1 - disc) + admin).toLocaleString();
+                        })()}
                       </p>
                     </div>
                   </div>
+                  {(() => {
+                    const isBPJSKetenagakerjaan = selectedProduct?.name?.toUpperCase().includes("BPJS KETENAGAKERJAAN");
+                    let discP = 0;
+                    if (isBPJSKetenagakerjaan) {
+                      if ([1, 3, 6, 9].includes(formData.quantity)) discP = 50;
+                      else if (formData.quantity === 12) discP = 37.5;
+                    }
+                    if (discP > 0) {
+                       const subtotal = formData.quantity * selectedProduct.price;
+                       const discA = subtotal * (discP / 100);
+                       return (
+                         <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px dashed #cbd5e1', display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                           <span style={{ color: '#059669', fontWeight: 600 }}>Potongan Khusus ({discP}%)</span>
+                           <span style={{ color: '#059669', fontWeight: 700 }}>- Rp {discA.toLocaleString()}</span>
+                         </div>
+                       );
+                    }
+                    return null;
+                  })()}
                   <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
                     <div className="form-group" style={{ maxWidth: 120 }}>
                       <label>Jumlah</label>
@@ -1146,7 +1185,20 @@ const SupermarketReceipt = ({ ticket, onBack }) => {
             </table>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 18, borderTop: '1px dashed #333', paddingTop: 10 }}>
+          {ticket.discountAmount > 0 && (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, borderTop: '1px dashed #333', paddingTop: 10 }}>
+                <span>Subtotal</span>
+                <span>{ticket.subtotal.toLocaleString()}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#059669', marginBottom: 5 }}>
+                <span>Potongan ({ticket.discountPercentage}%)</span>
+                <span>- {ticket.discountAmount.toLocaleString()}</span>
+              </div>
+            </>
+          )}
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 18, borderTop: ticket.discountAmount > 0 ? '1px dashed #333' : 'none', paddingTop: 10 }}>
             <span>TOTAL</span>
             <span>Rp {ticket.total.toLocaleString()}</span>
           </div>
@@ -1564,9 +1616,16 @@ const Receipt = ({ ticket, onBack }) => {
                 <td style={{ padding: '10px' }}>{ticket.productName} x {ticket.quantity}</td>
                 <td style={{ textAlign: 'right', padding: '10px', fontWeight: 500 }}>{(ticket.price * ticket.quantity).toLocaleString('id-ID')}</td>
               </tr>
-              {ticket.adminFee > 0 && (
+              {ticket.discountAmount > 0 && (
                 <tr>
                   <td style={{ textAlign: 'center', padding: '10px' }}>2</td>
+                  <td>Potongan ({ticket.discountPercentage}%)</td>
+                  <td style={{ textAlign: 'right', padding: '10px', fontWeight: 500, color: '#059669' }}>- {ticket.discountAmount.toLocaleString('id-ID')}</td>
+                </tr>
+              )}
+              {ticket.adminFee > 0 && (
+                <tr>
+                  <td style={{ textAlign: 'center', padding: '10px' }}>{ticket.discountAmount > 0 ? 3 : 2}</td>
                   <td>Biaya Admin</td>
                   <td style={{ textAlign: 'right', padding: '10px', fontWeight: 500 }}>{ticket.adminFee.toLocaleString('id-ID')}</td>
                 </tr>
