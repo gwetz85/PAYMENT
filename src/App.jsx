@@ -367,16 +367,14 @@ const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout }) => (
             >
               <span>📜</span> Riwayat Transaksi
             </button>
+            <button 
+              className={`nav-item ${activeTab === 'arsip' ? 'active' : ''}`}
+              onClick={() => setActiveTab('arsip')}
+            >
+              <span>📂</span> Data Transaksi
+            </button>
           </>
         )}
-
-        {/* Global Menu for all logged-in users */}
-        <button 
-          className={`nav-item ${activeTab === 'arsip' ? 'active' : ''}`}
-          onClick={() => setActiveTab('arsip')}
-        >
-          <span>📂</span> Data Transaksi
-        </button>
       </div>
     </div>
 
@@ -401,7 +399,11 @@ function App() {
     if (currentUser?.role === 'ADMIN' && activeTab === 'pembayaran') {
       setActiveTab('dashboard');
     }
-  }, [currentUser]);
+    // Safety check: if user is not admin but on 'arsip' tab, redirect to 'pembayaran'
+    if (currentUser?.role !== 'ADMIN' && activeTab === 'arsip') {
+      setActiveTab('pembayaran');
+    }
+  }, [currentUser, activeTab]);
   
   const [users, setUsers] = useState({});
   const [storeInfo, setStoreInfo] = useState({
@@ -553,7 +555,7 @@ function App() {
           </div>
         )}
 
-        {activeTab === 'arsip' && (
+        {activeTab === 'arsip' && currentUser.role === 'ADMIN' && (
           <div className="page fade-in">
             <header className="page-header">
               <h1 className="page-title">Data Transaksi (Arsip)</h1>
