@@ -744,7 +744,8 @@ const PaymentTab = ({ products, storeInfo }) => {
     phone: '',
     productId: '',
     customerId: '', // ID Pelanggan
-    quantity: 1
+    quantity: 1,
+    discountPercentage: 0
   });
   const [showReceipt, setShowReceipt] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
@@ -777,6 +778,8 @@ const PaymentTab = ({ products, storeInfo }) => {
     }
     
     const currentAdminFee = selectedCategory === 'PULSA' ? 0 : ADMIN_FEE;
+    const subtotal = selectedProduct.price * formData.quantity;
+    const discountAmount = subtotal * (formData.discountPercentage / 100);
     
     const ticket = {
       id: "TRX-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
@@ -787,7 +790,9 @@ const PaymentTab = ({ products, storeInfo }) => {
       price: selectedProduct.price,
       quantity: formData.quantity,
       adminFee: currentAdminFee,
-      total: (selectedProduct.price * formData.quantity) + currentAdminFee,
+      discountPercentage: formData.discountPercentage,
+      discountAmount: discountAmount,
+      total: subtotal - discountAmount + currentAdminFee,
       date: new Date().toLocaleString('id-ID'),
       timestamp: Date.now(),
       storeInfo: storeInfo
@@ -937,12 +942,21 @@ const PaymentTab = ({ products, storeInfo }) => {
                       </p>
                     </div>
                   </div>
-                  <div className="form-group" style={{ marginTop: 16, maxWidth: 120 }}>
-                    <label>Jumlah</label>
-                    <input 
-                      type="number" min="1" value={formData.quantity} 
-                      onChange={e => setFormData({...formData, quantity: parseInt(e.target.value) || 1})}
-                    />
+                  <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
+                    <div className="form-group" style={{ maxWidth: 120 }}>
+                      <label>Jumlah</label>
+                      <input 
+                        type="number" min="1" value={formData.quantity} 
+                        onChange={e => setFormData({...formData, quantity: parseInt(e.target.value) || 1})}
+                      />
+                    </div>
+                    <div className="form-group" style={{ maxWidth: 120 }}>
+                      <label>Diskon (%)</label>
+                      <input 
+                        type="number" min="0" max="100" value={formData.discountPercentage} 
+                        onChange={e => setFormData({...formData, discountPercentage: parseInt(e.target.value) || 0})}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -967,6 +981,7 @@ const DailyTransactionTab = ({ products, storeInfo }) => {
   const [showReceipt, setShowReceipt] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
   const [customerName, setCustomerName] = useState('');
+  const [discountPercentage, setDiscountPercentage] = useState(0);
 
   const harianProducts = products.filter(p => p.category === 'HARIAN');
 
@@ -992,15 +1007,20 @@ const DailyTransactionTab = ({ products, storeInfo }) => {
     ));
   };
 
-  const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-
   const handleCheckout = async () => {
     if (cart.length === 0) return;
+
+    const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const discountAmount = subtotal * (discountPercentage / 100);
+    const total = subtotal - discountAmount;
     
     const ticket = {
       id: "SHOP-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
       customerName: customerName || "Pelanggan Umum",
       items: cart,
+      subtotal: subtotal,
+      discountPercentage: discountPercentage,
+      discountAmount: discountAmount,
       total: total,
       date: new Date().toLocaleString('id-ID'),
       timestamp: Date.now(),
@@ -1079,9 +1099,28 @@ const DailyTransactionTab = ({ products, storeInfo }) => {
           {cart.length === 0 && <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px 0' }}>Keranjang kosong</p>}
         </div>
         <div style={{ borderTop: '2px solid var(--border-color)', paddingTop: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div className="form-group" style={{ marginBottom: 16 }}>
+            <label>Diskon (%)</label>
+            <input 
+              type="number" min="0" max="100" value={discountPercentage} 
+              onChange={e => setDiscountPercentage(parseInt(e.target.value) || 0)} 
+            />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 13 }}>
+            <span>Subtotal</span>
+            <span>Rp {cart.reduce((acc, item) => acc + (item.price * item.quantity), 0).toLocaleString()}</span>
+          </div>
+          {discountPercentage > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 13, color: '#ef4444' }}>
+              <span>Diskon ({discountPercentage}%)</span>
+              <span>- Rp {(cart.reduce((acc, item) => acc + (item.price * item.quantity), 0) * (discountPercentage / 100)).toLocaleString()}</span>
+            </div>
+          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, marginTop: 8 }}>
             <span style={{ fontWeight: 700 }}>Total</span>
-            <span style={{ fontWeight: 700, fontSize: 20, color: 'var(--primary)' }}>Rp {total.toLocaleString()}</span>
+            <span style={{ fontWeight: 700, fontSize: 20, color: 'var(--primary)' }}>
+              Rp {(cart.reduce((acc, item) => acc + (item.price * item.quantity), 0) * (1 - discountPercentage / 100)).toLocaleString()}
+            </span>
           </div>
           <button 
             disabled={cart.length === 0}
@@ -1136,7 +1175,20 @@ const SupermarketReceipt = ({ ticket, onBack }) => {
             </table>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 18, marginTop: 10 }}>
+          {ticket.discountAmount > 0 && (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, borderTop: '1px dashed #333', paddingTop: 10 }}>
+                <span>Subtotal</span>
+                <span>{ticket.subtotal.toLocaleString()}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#ef4444', marginBottom: 5 }}>
+                <span>Diskon ({ticket.discountPercentage}%)</span>
+                <span>- {ticket.discountAmount.toLocaleString()}</span>
+              </div>
+            </>
+          )}
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 18, borderTop: ticket.discountAmount > 0 ? '1px dashed #333' : 'none', paddingTop: 10 }}>
             <span>TOTAL</span>
             <span>Rp {ticket.total.toLocaleString()}</span>
           </div>
@@ -1554,9 +1606,16 @@ const Receipt = ({ ticket, onBack }) => {
                 <td style={{ padding: '10px' }}>{ticket.productName} x {ticket.quantity}</td>
                 <td style={{ textAlign: 'right', padding: '10px', fontWeight: 500 }}>{(ticket.price * ticket.quantity).toLocaleString('id-ID')}</td>
               </tr>
-              {ticket.adminFee > 0 && (
+              {ticket.discountAmount > 0 && (
                 <tr>
                   <td style={{ textAlign: 'center', padding: '10px' }}>2</td>
+                  <td>Diskon ({ticket.discountPercentage}%)</td>
+                  <td style={{ textAlign: 'right', padding: '10px', fontWeight: 500, color: '#ef4444' }}>- {ticket.discountAmount.toLocaleString('id-ID')}</td>
+                </tr>
+              )}
+              {ticket.adminFee > 0 && (
+                <tr>
+                  <td style={{ textAlign: 'center', padding: '10px' }}>{ticket.discountAmount > 0 ? 3 : 2}</td>
                   <td>Biaya Admin</td>
                   <td style={{ textAlign: 'right', padding: '10px', fontWeight: 500 }}>{ticket.adminFee.toLocaleString('id-ID')}</td>
                 </tr>
