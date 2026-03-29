@@ -316,100 +316,113 @@ const AuthPage = ({ users, setUsers, setCurrentUser }) => {
 
 // --- Application Layout Components ---
 
-const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout }) => (
-  <div className="sidebar">
-    <div>
-      <div className="logo" style={{ marginBottom: 32 }}>
-        <div className="logo-icon">P</div>
-        PASAR<span>KU</span>
+const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout, isOpen, onClose }) => {
+  const handleNavClick = (tab) => {
+    setActiveTab(tab);
+    if (window.innerWidth <= 768) {
+      onClose();
+    }
+  };
+
+  return (
+    <>
+      <div className={`sidebar-overlay ${isOpen ? 'show' : ''}`} onClick={onClose}></div>
+      <div className={`sidebar ${isOpen ? 'open' : ''}`}>
+        <div>
+          <div className="logo" style={{ marginBottom: 32 }}>
+            <div className="logo-icon">P</div>
+            PASAR<span>KU</span>
+          </div>
+          <div className="nav-links">
+            {(currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
+              <button 
+                className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+                onClick={() => handleNavClick('dashboard')}
+              >
+                <span>📊</span> Ringkasan
+              </button>
+            )}
+
+            <button 
+              className={`nav-item ${activeTab === 'pembayaran' ? 'active' : ''}`}
+              onClick={() => handleNavClick('pembayaran')}
+            >
+              <span>🌐</span> PPOB & Tagihan
+            </button>
+
+            <button 
+              className={`nav-item ${activeTab === 'harian' ? 'active' : ''}`}
+              onClick={() => handleNavClick('harian')}
+            >
+              <span>🛒</span> Transaksi Harian
+            </button>
+
+            {(currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
+              <button 
+                className={`nav-item ${activeTab === 'verifikasi' ? 'active' : ''}`}
+                onClick={() => handleNavClick('verifikasi')}
+              >
+                <span>✔️</span> Verifikasi Pembayaran
+              </button>
+            )}
+
+            {currentUser.role === 'ADMIN' && (
+              <button 
+                className={`nav-item ${activeTab === 'pengaturan' ? 'active' : ''}`}
+                onClick={() => handleNavClick('pengaturan')}
+              >
+                <span>⚙️</span> Pengaturan
+              </button>
+            )}
+
+            {currentUser.role === 'ADMIN' && (
+              <button 
+                className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
+                onClick={() => handleNavClick('users')}
+              >
+                <span>👥</span> Manajemen User
+              </button>
+            )}
+
+            {(currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
+              <button 
+                className={`nav-item ${activeTab === 'riwayat' ? 'active' : ''}`}
+                onClick={() => handleNavClick('riwayat')}
+              >
+                <span>📜</span> Riwayat Transaksi
+              </button>
+            )}
+
+            {currentUser.role === 'ADMIN' && (
+              <button 
+                className={`nav-item ${activeTab === 'arsip' ? 'active' : ''}`}
+                onClick={() => handleNavClick('arsip')}
+              >
+                <span>📂</span> Data Transaksi
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border-color)', paddingTop: 24 }}>
+          <div style={{ marginBottom: 16 }}>
+            <p style={{ fontSize: 14, fontWeight: 700 }}>{currentUser.name}</p>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{currentUser.role}</p>
+          </div>
+          <button onClick={onLogout} className="nav-item" style={{ width: '100%', background: '#fee2e2', color: '#991b1b' }}>
+            <span>🚪</span> Keluar
+          </button>
+        </div>
       </div>
-      <div className="nav-links">
-        {(currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
-          <button 
-            className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setActiveTab('dashboard')}
-          >
-            <span>📊</span> Ringkasan
-          </button>
-        )}
-
-        <button 
-          className={`nav-item ${activeTab === 'pembayaran' ? 'active' : ''}`}
-          onClick={() => setActiveTab('pembayaran')}
-        >
-          <span>🌐</span> PPOB & Tagihan
-        </button>
-
-        <button 
-          className={`nav-item ${activeTab === 'harian' ? 'active' : ''}`}
-          onClick={() => setActiveTab('harian')}
-        >
-          <span>🛒</span> Transaksi Harian
-        </button>
-
-        {(currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
-          <button 
-            className={`nav-item ${activeTab === 'verifikasi' ? 'active' : ''}`}
-            onClick={() => setActiveTab('verifikasi')}
-          >
-            <span>✔️</span> Verifikasi Pembayaran
-          </button>
-        )}
-
-        {currentUser.role === 'ADMIN' && (
-          <button 
-            className={`nav-item ${activeTab === 'pengaturan' ? 'active' : ''}`}
-            onClick={() => setActiveTab('pengaturan')}
-          >
-            <span>⚙️</span> Pengaturan
-          </button>
-        )}
-
-        {currentUser.role === 'ADMIN' && (
-          <button 
-            className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
-            onClick={() => setActiveTab('users')}
-          >
-            <span>👥</span> Manajemen User
-          </button>
-        )}
-
-        {(currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
-          <button 
-            className={`nav-item ${activeTab === 'riwayat' ? 'active' : ''}`}
-            onClick={() => setActiveTab('riwayat')}
-          >
-            <span>📜</span> Riwayat Transaksi
-          </button>
-        )}
-
-        {currentUser.role === 'ADMIN' && (
-          <button 
-            className={`nav-item ${activeTab === 'arsip' ? 'active' : ''}`}
-            onClick={() => setActiveTab('arsip')}
-          >
-            <span>📂</span> Data Transaksi
-          </button>
-        )}
-      </div>
-    </div>
-
-    <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border-color)', paddingTop: 24 }}>
-      <div style={{ marginBottom: 16 }}>
-        <p style={{ fontSize: 14, fontWeight: 700 }}>{currentUser.name}</p>
-        <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{currentUser.role}</p>
-      </div>
-      <button onClick={onLogout} className="nav-item" style={{ width: '100%', background: '#fee2e2', color: '#991b1b' }}>
-        <span>🚪</span> Keluar
-      </button>
-    </div>
-  </div>
-);
+    </>
+  );
+};
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [activeTab, setActiveTab] = useState('pembayaran');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   useEffect(() => {
     // Safety check: if user is not admin but on 'arsip' tab, redirect to 'pembayaran'
@@ -504,7 +517,22 @@ function App() {
 
   return (
     <div className="app-container">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser} onLogout={handleLogout} />
+      <header className="mobile-header">
+        <div className="logo">
+           <div className="logo-icon" style={{ width: 28, height: 28, fontSize: 14 }}>P</div>
+           PASAR<span>KU</span>
+        </div>
+        <button className="hamburger" onClick={() => setIsSidebarOpen(true)}>☰</button>
+      </header>
+
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        currentUser={currentUser} 
+        onLogout={handleLogout} 
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
       <main className="main-content">
         {activeTab === 'dashboard' && (currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
           <div className="page fade-in">
@@ -693,71 +721,73 @@ const UserManagementTab = ({ users }) => {
 
   return (
     <div className="card">
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>Nama</th>
-            <th>Username</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map(u => (
-            <tr key={u.id}>
-              <td>{u.name}</td>
-              <td>{u.username}</td>
-              <td>
-                {u.id === 'admin' ? (
-                  <span className="badge badge-primary">ADMIN</span>
-                ) : (
-                  <select 
-                    value={u.role} 
-                    onChange={(e) => setRole(u.id, e.target.value)}
-                    style={{ padding: '4px 8px', fontSize: 12 }}
-                  >
-                    <option value="PETUGAS">PETUGAS</option>
-                    <option value="BENDAHARA">BENDAHARA</option>
-                    <option value="ADMIN">ADMIN</option>
-                  </select>
-                )}
-              </td>
-              <td>
-                <span className={`badge ${u.active ? 'badge-success' : 'badge-warning'}`}>
-                  {u.active ? 'AKTIF' : 'PENDING'}
-                </span>
-              </td>
-              <td>
-                <div style={{ display: 'flex', gap: 12 }}>
-                  {u.id !== 'admin' && (
-                    <button 
-                      onClick={() => toggleStatus(u.id, u.active)}
-                      style={{ color: u.active ? '#92400e' : '#065f46', background: 'none', fontWeight: 600, fontSize: 13 }}
-                    >
-                      {u.active ? 'Nonaktifkan' : 'Aktifkan'}
-                    </button>
-                  )}
-                  <button 
-                    onClick={() => handleResetPassword(u.id, u.name)}
-                    style={{ color: 'var(--accent)', background: 'none', fontWeight: 600, fontSize: 13 }}
-                  >
-                    Ganti Sandi
-                  </button>
-                  {u.id !== 'admin' && (
-                    <button 
-                      onClick={() => deleteUser(u.id)}
-                      style={{ color: '#ef4444', background: 'none', fontWeight: 600, fontSize: 13 }}
-                    >
-                      Hapus
-                    </button>
-                  )}
-                </div>
-              </td>
+      <div className="table-responsive">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Nama</th>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Aksi</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {users.map(u => (
+              <tr key={u.id}>
+                <td>{u.name}</td>
+                <td>{u.username}</td>
+                <td>
+                  {u.id === 'admin' ? (
+                    <span className="badge badge-primary">ADMIN</span>
+                  ) : (
+                    <select 
+                      value={u.role} 
+                      onChange={(e) => setRole(u.id, e.target.value)}
+                      style={{ padding: '4px 8px', fontSize: 12 }}
+                    >
+                      <option value="PETUGAS">PETUGAS</option>
+                      <option value="BENDAHARA">BENDAHARA</option>
+                      <option value="ADMIN">ADMIN</option>
+                    </select>
+                  )}
+                </td>
+                <td>
+                  <span className={`badge ${u.active ? 'badge-success' : 'badge-warning'}`}>
+                    {u.active ? 'AKTIF' : 'PENDING'}
+                  </span>
+                </td>
+                <td>
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    {u.id !== 'admin' && (
+                      <button 
+                        onClick={() => toggleStatus(u.id, u.active)}
+                        style={{ color: u.active ? '#92400e' : '#065f46', background: 'none', fontWeight: 600, fontSize: 13 }}
+                      >
+                        {u.active ? 'Nonaktifkan' : 'Aktifkan'}
+                      </button>
+                    )}
+                    <button 
+                      onClick={() => handleResetPassword(u.id, u.name)}
+                      style={{ color: 'var(--accent)', background: 'none', fontWeight: 600, fontSize: 13 }}
+                    >
+                      Ganti Sandi
+                    </button>
+                    {u.id !== 'admin' && (
+                      <button 
+                        onClick={() => deleteUser(u.id)}
+                        style={{ color: '#ef4444', background: 'none', fontWeight: 600, fontSize: 13 }}
+                      >
+                        Hapus
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
@@ -1495,24 +1525,26 @@ const SettingsTab = ({ products, storeInfo }) => {
               <span style={{ background: 'var(--accent)', color: 'white', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>📦</span>
               Stok Barang Harian
             </h3>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Produk</th>
-                  <th>Kategori</th>
-                  <th>Harga</th>
-                  <th>Stok</th>
-                  <th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.filter(p => p.category === 'HARIAN').length === 0 ? (
-                  <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada produk harian</td></tr>
-                ) : (
-                  products.filter(p => p.category === 'HARIAN').map(p => renderProductRow(p))
-                )}
-              </tbody>
-            </table>
+            <div className="table-responsive">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Produk</th>
+                    <th>Kategori</th>
+                    <th>Harga</th>
+                    <th>Stok</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.filter(p => p.category === 'HARIAN').length === 0 ? (
+                    <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada produk harian</td></tr>
+                  ) : (
+                    products.filter(p => p.category === 'HARIAN').map(p => renderProductRow(p))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Section 2: Produk Digital */}
@@ -1521,24 +1553,26 @@ const SettingsTab = ({ products, storeInfo }) => {
               <span style={{ background: 'var(--primary)', color: 'white', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🌐</span>
               Layanan Produk Digital
             </h3>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Produk</th>
-                  <th>Kategori</th>
-                  <th>Harga</th>
-                  <th>Stok</th>
-                  <th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.filter(p => p.category !== 'HARIAN').length === 0 ? (
-                  <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada layanan digital</td></tr>
-                ) : (
-                  products.filter(p => p.category !== 'HARIAN').map(p => renderProductRow(p))
-                )}
-              </tbody>
-            </table>
+            <div className="table-responsive">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Produk</th>
+                    <th>Kategori</th>
+                    <th>Harga</th>
+                    <th>Stok</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.filter(p => p.category !== 'HARIAN').length === 0 ? (
+                    <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Belum ada layanan digital</td></tr>
+                  ) : (
+                    products.filter(p => p.category !== 'HARIAN').map(p => renderProductRow(p))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
@@ -1744,43 +1778,45 @@ const VerificationTab = ({ transactions }) => {
   return (
     <div className="card">
       <h3 style={{ marginBottom: 20 }}>Daftar Menunggu Verifikasi</h3>
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>ID Trx</th>
-            <th>Pelanggan</th>
-            <th>Layanan</th>
-            <th>Total</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pendingTransactions.length === 0 ? (
-            <tr><td colSpan="5" style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted)' }}>Tidak ada transaksi yang menunggu verifikasi.</td></tr>
-          ) : (
-            pendingTransactions.map(t => (
-              <tr key={t.id}>
-                <td><code style={{ fontSize: 11 }}>{t.id}</code></td>
-                <td>
-                  <div style={{ fontWeight: 600 }}>{t.customerName}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>ID: {t.customerId}</div>
-                </td>
-                <td>{t.productName}</td>
-                <td style={{ fontWeight: 700 }}>Rp {t.total.toLocaleString()}</td>
-                <td>
-                  <button 
-                    onClick={() => setVerifyingTicket(t)}
-                    className="btn btn-primary" 
-                    style={{ padding: '6px 12px', fontSize: 12 }}
-                  >
-                    Verifikasi
-                  </button>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+      <div className="table-responsive">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>ID Trx</th>
+              <th>Pelanggan</th>
+              <th>Layanan</th>
+              <th>Total</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pendingTransactions.length === 0 ? (
+              <tr><td colSpan="5" style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted)' }}>Tidak ada transaksi yang menunggu verifikasi.</td></tr>
+            ) : (
+              pendingTransactions.map(t => (
+                <tr key={t.id}>
+                  <td><code style={{ fontSize: 11 }}>{t.id}</code></td>
+                  <td>
+                    <div style={{ fontWeight: 600 }}>{t.customerName}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>ID: {t.customerId}</div>
+                  </td>
+                  <td>{t.productName}</td>
+                  <td style={{ fontWeight: 700 }}>Rp {t.total.toLocaleString()}</td>
+                  <td>
+                    <button 
+                      onClick={() => setVerifyingTicket(t)}
+                      className="btn btn-primary" 
+                      style={{ padding: '6px 12px', fontSize: 12 }}
+                    >
+                      Verifikasi
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {verifyingTicket && (
         <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
@@ -1873,47 +1909,49 @@ const TransactionHistoryTab = ({ transactions }) => {
           style={{ maxWidth: 400 }}
         />
       </div>
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>ID Trx</th>
-            <th>Tanggal</th>
-            <th>Pelanggan</th>
-            <th>Layanan</th>
-            <th>Total</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedTransactions.length === 0 ? (
-            <tr><td colSpan="6" style={{ textAlign: 'center', padding: 20 }}>{searchTerm ? 'Transaksi tidak ditemukan' : 'Belum ada transaksi'}</td></tr>
-          ) : (
-            sortedTransactions.map(t => (
-              <tr key={t.id}>
-                <td><code style={{ fontSize: 11, background: '#f1f5f9', padding: '2px 4px', borderRadius: 4 }}>{t.id}</code></td>
-                <td>{t.date}</td>
-                <td>
-                  <div style={{ fontWeight: 600 }}>{t.customerName}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t.customerPhone}</div>
-                </td>
-                <td>{t.productName}</td>
-                <td style={{ fontWeight: 700, color: 'var(--primary)' }}>
-                  Rp {t.total.toLocaleString()}
-                </td>
-                <td>
-                  <div style={{ display: 'flex', gap: 12 }}>
-                    {t.status !== 'LUNAS' && (
-                      <button onClick={() => markAsLunas(t)} style={{ color: '#059669', background: 'none', fontWeight: 600, fontSize: 13 }}>LUNAS</button>
-                    )}
-                    <button onClick={() => handlePrint(t)} style={{ color: 'var(--primary)', background: 'none', fontWeight: 600, fontSize: 13 }}>Cetak</button>
-                    <button onClick={() => deleteTransaction(t.fbKey)} style={{ color: '#ef4444', background: 'none', fontWeight: 600, fontSize: 13 }}>Hapus</button>
-                  </div>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+      <div className="table-responsive">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>ID Trx</th>
+              <th>Tanggal</th>
+              <th>Pelanggan</th>
+              <th>Layanan</th>
+              <th>Total</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedTransactions.length === 0 ? (
+              <tr><td colSpan="6" style={{ textAlign: 'center', padding: 20 }}>{searchTerm ? 'Transaksi tidak ditemukan' : 'Belum ada transaksi'}</td></tr>
+            ) : (
+              sortedTransactions.map(t => (
+                <tr key={t.id}>
+                  <td><code style={{ fontSize: 11, background: '#f1f5f9', padding: '2px 4px', borderRadius: 4 }}>{t.id}</code></td>
+                  <td>{t.date}</td>
+                  <td>
+                    <div style={{ fontWeight: 600 }}>{t.customerName}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t.customerPhone}</div>
+                  </td>
+                  <td>{t.productName}</td>
+                  <td style={{ fontWeight: 700, color: 'var(--primary)' }}>
+                    Rp {t.total.toLocaleString()}
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      {t.status !== 'LUNAS' && (
+                        <button onClick={() => markAsLunas(t)} style={{ color: '#059669', background: 'none', fontWeight: 600, fontSize: 13 }}>LUNAS</button>
+                      )}
+                      <button onClick={() => handlePrint(t)} style={{ color: 'var(--primary)', background: 'none', fontWeight: 600, fontSize: 13 }}>Cetak</button>
+                      <button onClick={() => deleteTransaction(t.fbKey)} style={{ color: '#ef4444', background: 'none', fontWeight: 600, fontSize: 13 }}>Hapus</button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
