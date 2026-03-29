@@ -334,9 +334,8 @@ const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout }) => (
         )}
 
         <button 
-          className={`nav-item ${activeTab === 'pembayaran' ? 'active' : ''} ${currentUser.role === 'ADMIN' ? 'disabled' : ''}`}
-          onClick={() => currentUser.role !== 'ADMIN' && setActiveTab('pembayaran')}
-          disabled={currentUser.role === 'ADMIN'}
+          className={`nav-item ${activeTab === 'pembayaran' ? 'active' : ''}`}
+          onClick={() => setActiveTab('pembayaran')}
         >
           <span>🌐</span> PPOB & Tagihan
         </button>
@@ -397,9 +396,6 @@ function App() {
   const [activeTab, setActiveTab] = useState('pembayaran');
   
   useEffect(() => {
-    if (currentUser?.role === 'ADMIN' && activeTab === 'pembayaran') {
-      setActiveTab('dashboard');
-    }
     // Safety check: if user is not admin but on 'arsip' tab, redirect to 'pembayaran'
     if (currentUser?.role !== 'ADMIN' && activeTab === 'arsip') {
       setActiveTab('pembayaran');
