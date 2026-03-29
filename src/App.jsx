@@ -334,8 +334,9 @@ const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout }) => (
         )}
 
         <button 
-          className={`nav-item ${activeTab === 'pembayaran' ? 'active' : ''}`}
-          onClick={() => setActiveTab('pembayaran')}
+          className={`nav-item ${activeTab === 'pembayaran' ? 'active' : ''} ${currentUser.role === 'ADMIN' ? 'disabled' : ''}`}
+          onClick={() => currentUser.role !== 'ADMIN' && setActiveTab('pembayaran')}
+          disabled={currentUser.role === 'ADMIN'}
         >
           <span>🌐</span> PPOB & Tagihan
         </button>

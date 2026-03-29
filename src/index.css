@@ -144,7 +144,14 @@ input:focus {
   color: white;
 }
 
-.nav-item:hover:not(.active) {
+.nav-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+  pointer-events: none; /* Disables interaction completely */
+}
+
+.nav-item:hover:not(.active):not(.disabled) {
   background-color: #f1f5f9;
   color: var(--text-main);
 }
