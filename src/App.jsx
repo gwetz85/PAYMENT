@@ -324,7 +324,7 @@ const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout }) => (
         PASAR<span>KU</span>
       </div>
       <div className="nav-links">
-        {currentUser.role === 'ADMIN' && (
+        {(currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
           <button 
             className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
@@ -347,33 +347,49 @@ const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout }) => (
           <span>🛒</span> Transaksi Harian
         </button>
 
+        {(currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
+          <button 
+            className={`nav-item ${activeTab === 'verifikasi' ? 'active' : ''}`}
+            onClick={() => setActiveTab('verifikasi')}
+          >
+            <span>✔️</span> Verifikasi Pembayaran
+          </button>
+        )}
+
         {currentUser.role === 'ADMIN' && (
-          <>
-            <button 
-              className={`nav-item ${activeTab === 'pengaturan' ? 'active' : ''}`}
-              onClick={() => setActiveTab('pengaturan')}
-            >
-              <span>⚙️</span> Pengaturan
-            </button>
-            <button 
-              className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
-              onClick={() => setActiveTab('users')}
-            >
-              <span>👥</span> Manajemen User
-            </button>
-            <button 
-              className={`nav-item ${activeTab === 'riwayat' ? 'active' : ''}`}
-              onClick={() => setActiveTab('riwayat')}
-            >
-              <span>📜</span> Riwayat Transaksi
-            </button>
-            <button 
-              className={`nav-item ${activeTab === 'arsip' ? 'active' : ''}`}
-              onClick={() => setActiveTab('arsip')}
-            >
-              <span>📂</span> Data Transaksi
-            </button>
-          </>
+          <button 
+            className={`nav-item ${activeTab === 'pengaturan' ? 'active' : ''}`}
+            onClick={() => setActiveTab('pengaturan')}
+          >
+            <span>⚙️</span> Pengaturan
+          </button>
+        )}
+
+        {currentUser.role === 'ADMIN' && (
+          <button 
+            className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
+            onClick={() => setActiveTab('users')}
+          >
+            <span>👥</span> Manajemen User
+          </button>
+        )}
+
+        {(currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
+          <button 
+            className={`nav-item ${activeTab === 'riwayat' ? 'active' : ''}`}
+            onClick={() => setActiveTab('riwayat')}
+          >
+            <span>📜</span> Riwayat Transaksi
+          </button>
+        )}
+
+        {currentUser.role === 'ADMIN' && (
+          <button 
+            className={`nav-item ${activeTab === 'arsip' ? 'active' : ''}`}
+            onClick={() => setActiveTab('arsip')}
+          >
+            <span>📂</span> Data Transaksi
+          </button>
         )}
       </div>
     </div>
@@ -490,7 +506,7 @@ function App() {
     <div className="app-container">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser} onLogout={handleLogout} />
       <main className="main-content">
-        {activeTab === 'dashboard' && currentUser.role === 'ADMIN' && (
+        {activeTab === 'dashboard' && (currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
           <div className="page fade-in">
             <header className="page-header">
               <h1 className="page-title">Ringkasan Dashboard</h1>
@@ -542,13 +558,23 @@ function App() {
             <UserManagementTab users={Object.values(users || {})} />
           </div>
         )}
-        {activeTab === 'riwayat' && currentUser.role === 'ADMIN' && (
+        {activeTab === 'riwayat' && (currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
           <div className="page fade-in">
             <header className="page-header">
               <h1 className="page-title">Riwayat Transaksi</h1>
-              <p className="page-subtitle">Daftar seluruh transaksi yang dilakukan</p>
+              <p className="page-subtitle">Daftar seluruh transaksi yang telah lunas</p>
             </header>
             <TransactionHistoryTab transactions={transactions} />
+          </div>
+        )}
+
+        {activeTab === 'verifikasi' && (currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
+          <div className="page fade-in">
+            <header className="page-header">
+              <h1 className="page-title">Verifikasi Pembayaran</h1>
+              <p className="page-subtitle">Verifikasi transaksi pending dan masukkan no. referensi</p>
+            </header>
+            <VerificationTab transactions={transactions} />
           </div>
         )}
 
@@ -692,6 +718,7 @@ const UserManagementTab = ({ users }) => {
                     style={{ padding: '4px 8px', fontSize: 12 }}
                   >
                     <option value="PETUGAS">PETUGAS</option>
+                    <option value="BENDAHARA">BENDAHARA</option>
                     <option value="ADMIN">ADMIN</option>
                   </select>
                 )}
@@ -800,6 +827,8 @@ const PaymentTab = ({ products, storeInfo }) => {
       discountAmount: discountAmount,
       total: (subtotal - discountAmount) + currentAdminFee,
       date: new Date().toLocaleString('id-ID'),
+      status: selectedCategory === 'BPJS' ? 'MENUNGGU VERIFIKASI' : 'LUNAS',
+      paidAt: selectedCategory === 'BPJS' ? null : new Date().toLocaleString('id-ID'),
       timestamp: Date.now(),
       storeInfo: storeInfo
     };
@@ -1687,6 +1716,102 @@ const Receipt = ({ ticket, onBack }) => {
   );
 };
 
+const VerificationTab = ({ transactions }) => {
+  const [verifyingTicket, setVerifyingTicket] = useState(null);
+  const [noRef, setNoRef] = useState('');
+
+  const pendingTransactions = transactions.filter(t => t.status === 'MENUNGGU VERIFIKASI');
+
+  const handleVerify = () => {
+    if (!noRef.trim()) {
+      alert("Masukkan Nomor Referensi (Kode Transaksi)");
+      return;
+    }
+
+    update(ref(db, `transactions/${verifyingTicket.fbKey}`), {
+      status: 'LUNAS',
+      noReferensi: noRef,
+      paidAt: new Date().toLocaleString('id-ID')
+    }).then(() => {
+      alert("Pembayaran berhasil diverifikasi!");
+      setVerifyingTicket(null);
+      setNoRef('');
+    }).catch(() => {
+      alert("Gagal memverifikasi pembayaran.");
+    });
+  };
+
+  return (
+    <div className="card">
+      <h3 style={{ marginBottom: 20 }}>Daftar Menunggu Verifikasi</h3>
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>ID Trx</th>
+            <th>Pelanggan</th>
+            <th>Layanan</th>
+            <th>Total</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pendingTransactions.length === 0 ? (
+            <tr><td colSpan="5" style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted)' }}>Tidak ada transaksi yang menunggu verifikasi.</td></tr>
+          ) : (
+            pendingTransactions.map(t => (
+              <tr key={t.id}>
+                <td><code style={{ fontSize: 11 }}>{t.id}</code></td>
+                <td>
+                  <div style={{ fontWeight: 600 }}>{t.customerName}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>ID: {t.customerId}</div>
+                </td>
+                <td>{t.productName}</td>
+                <td style={{ fontWeight: 700 }}>Rp {t.total.toLocaleString()}</td>
+                <td>
+                  <button 
+                    onClick={() => setVerifyingTicket(t)}
+                    className="btn btn-primary" 
+                    style={{ padding: '6px 12px', fontSize: 12 }}
+                  >
+                    Verifikasi
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+
+      {verifyingTicket && (
+        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div className="card" style={{ width: '100%', maxWidth: 450, padding: 24 }}>
+            <h2 style={{ marginBottom: 16 }}>Verifikasi Pembayaran</h2>
+            <div style={{ marginBottom: 20, padding: 16, background: '#f8fafc', borderRadius: 12, fontSize: 14 }}>
+              <p><strong>Layanan:</strong> {verifyingTicket.productName}</p>
+              <p><strong>Pelanggan:</strong> {verifyingTicket.customerName}</p>
+              <p><strong>Total:</strong> Rp {verifyingTicket.total.toLocaleString()}</p>
+            </div>
+            <div className="form-group">
+              <label>Kode Transaksi / No. Referensi</label>
+              <input 
+                type="text" 
+                value={noRef} 
+                onChange={e => setNoRef(e.target.value)} 
+                placeholder="Masukkan No. Referensi..." 
+                autoFocus
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+              <button onClick={handleVerify} className="btn btn-primary" style={{ flex: 1 }}>Simpan & Tandai Lunas</button>
+              <button onClick={() => { setVerifyingTicket(null); setNoRef(''); }} className="btn" style={{ flex: 1, background: '#f1f5f9' }}>Batal</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const TransactionHistoryTab = ({ transactions }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showReceipt, setShowReceipt] = useState(false);
@@ -1727,8 +1852,9 @@ const TransactionHistoryTab = ({ transactions }) => {
     setShowReceipt(true);
   };
 
-  // Sort by timestamp (descending)
+  // Filter and Sort by timestamp (descending)
   const sortedTransactions = [...transactions]
+    .filter(t => t.status === 'LUNAS')
     .filter(t => 
       (t.id?.toLowerCase() || '').includes(searchTerm.toLowerCase()) || 
       (t.customerName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
