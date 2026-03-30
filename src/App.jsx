@@ -220,6 +220,16 @@ const ArsipTab = ({ currentUser }) => {
   );
 };
 
+// --- Auth Helpers ---
+const getDeviceId = () => {
+  let id = localStorage.getItem('pasarku_device_id');
+  if (!id) {
+    id = 'dev-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
+    localStorage.setItem('pasarku_device_id', id);
+  }
+  return id;
+};
+
 // --- Auth Components ---
 
 const AuthPage = ({ users, setUsers, setCurrentUser }) => {
@@ -239,6 +249,19 @@ const AuthPage = ({ users, setUsers, setCurrentUser }) => {
       } else if (!user.active) {
         setError('Akun Anda belum aktif. Mohon hubungi ADMIN.');
       } else {
+        const currentDeviceId = getDeviceId();
+        
+        // --- 1 Device 1 Account Logic ---
+        if (user.role !== 'ADMIN' && user.deviceId && user.deviceId !== currentDeviceId) {
+           setError('⚠️ Akun ini sudah terkunci di perangkat lain. Mohon hubungi ADMIN untuk reset.');
+           return;
+        }
+
+        // Lock to current device if not already set
+        if (!user.deviceId) {
+           update(ref(db, `users/${user.id}`), { deviceId: currentDeviceId });
+        }
+        
         setCurrentUser(user);
         localStorage.setItem('pasarku_current_user', JSON.stringify(user));
       }
@@ -498,7 +521,19 @@ function App() {
 
     // 5. Auth Session
     const savedSession = localStorage.getItem('pasarku_current_user');
-    if (savedSession) setCurrentUser(JSON.parse(savedSession));
+    if (savedSession) {
+      const user = JSON.parse(savedSession);
+      // Validate device lock in real-time
+      const userRef = ref(db, `users/${user.id}`);
+      onValue(userRef, (snapshot) => {
+        const dbUser = snapshot.val();
+        if (!dbUser || !dbUser.active || (dbUser.role !== 'ADMIN' && dbUser.deviceId && dbUser.deviceId !== getDeviceId())) {
+           handleLogout();
+        } else {
+           setCurrentUser(dbUser);
+        }
+      });
+    }
     
     setIsInitialized(true);
   }, []);
@@ -711,6 +746,13 @@ const UserManagementTab = ({ users }) => {
     }
   };
 
+  const resetDevice = (id, name) => {
+    if (window.confirm(`Reset kunci perangkat untuk ${name}? Pengguna ini akan bisa login di perangkat lain.`)) {
+      update(ref(db, `users/${id}`), { deviceId: null });
+      alert(`Kunci perangkat untuk ${name} berhasil di-reset.`);
+    }
+  };
+
   const handleResetPassword = (id, name) => {
     const newPassword = window.prompt(`Masukkan katasandi baru untuk ${name}:`);
     if (newPassword && newPassword.trim() !== '') {
@@ -779,6 +821,14 @@ const UserManagementTab = ({ users }) => {
                         style={{ color: '#ef4444', background: 'none', fontWeight: 600, fontSize: 13 }}
                       >
                         Hapus
+                      </button>
+                    )}
+                    {u.id !== 'admin' && (
+                      <button 
+                         onClick={() => resetDevice(u.id, u.name)}
+                         style={{ color: '#6366f1', background: 'none', fontWeight: 600, fontSize: 13 }}
+                      >
+                         Reset Device
                       </button>
                     )}
                   </div>
