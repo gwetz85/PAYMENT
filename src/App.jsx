@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ref, onValue, set, push, update, remove } from "firebase/database";
 import { ref as sRef, uploadBytes, getDownloadURL, listAll, deleteObject } from "firebase/storage";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
-import { db, storage, auth } from "./firebase";
+import { db, storage } from "./firebase";
 import './index.css';
 
 const ArsipTab = ({ currentUser }) => {
@@ -233,51 +232,38 @@ const AuthPage = ({ users, setUsers, setCurrentUser }) => {
     setError('');
 
     if (isLogin) {
-      // Use Firebase Auth for Login
-      try {
-        const email = formData.username + "@pasarku.id"; // Internal email mapping
-        const userCredential = await signInWithEmailAndPassword(auth, email, formData.password);
-        const fbUser = userCredential.user;
-        
-        // Fetch detailed profile from RTDB
-        const userProfileRef = ref(db, `users/${fbUser.uid}`);
-        onValue(userProfileRef, (snapshot) => {
-          const profile = snapshot.val();
-          if (profile && profile.active) {
-            setCurrentUser(profile);
-            localStorage.setItem('pasarku_current_user', JSON.stringify(profile));
-          } else if (profile && !profile.active) {
-            setError('Akun Anda belum aktif. Mohon hubungi ADMIN.');
-            signOut(auth);
-          } else {
-            setError('Profil user tidak ditemukan.');
-            signOut(auth);
-          }
-        }, { onlyOnce: true });
-
-      } catch (err) {
-        setError('Username atau Katasandi salah: ' + err.message);
+      const userList = Object.values(users || {});
+      const user = userList.find(u => u.username === formData.username && u.password === formData.password);
+      if (!user) {
+        setError('Username atau Katasandi salah');
+      } else if (!user.active) {
+        setError('Akun Anda belum aktif. Mohon hubungi ADMIN.');
+      } else {
+        setCurrentUser(user);
+        localStorage.setItem('pasarku_current_user', JSON.stringify(user));
       }
     } else {
-      // Use Firebase Auth for Signup
+      const userList = Object.values(users || {});
+      if (userList.find(u => u.username === formData.username)) {
+        setError('Username sudah digunakan');
+        return;
+      }
+      const newUser = {
+        username: formData.username,
+        password: formData.password,
+        name: formData.name,
+        role: 'PETUGAS',
+        active: false
+      };
+      
       try {
-        const email = formData.username + "@pasarku.id";
-        const userCredential = await createUserWithEmailAndPassword(auth, email, formData.password);
-        const fbUser = userCredential.user;
-
-        const newUser = {
-          id: fbUser.uid,
-          username: formData.username,
-          name: formData.name,
-          role: 'PETUGAS',
-          active: false
-        };
-        
-        await set(ref(db, `users/${fbUser.uid}`), newUser);
+        const usersRef = ref(db, 'users');
+        const newUserRef = push(usersRef);
+        await set(newUserRef, { ...newUser, id: newUserRef.key });
         alert('Pendaftaran berhasil! Silakan tunggu aktivasi dari ADMIN.');
         setIsLogin(true);
       } catch (err) {
-        setError('Gagal mendaftar: ' + err.message);
+        setError('Gagal mendaftar. Coba lagi.');
       }
     }
   };
@@ -464,12 +450,12 @@ function App() {
         setUsers(data);
       } else {
         // Initial Admin Seed if DB is empty
-        // NOTE: New admin must be registered via the Signup page
-        const adminId = 'admin_placeholder'; 
+        const adminId = 'admin';
         set(ref(db, 'users/' + adminId), {
           id: adminId,
-          name: "Administrator Placeholder",
+          name: "Administrator",
           username: 'admin',
+          password: 'admin123',
           role: 'ADMIN',
           active: true
         });
@@ -510,34 +496,14 @@ function App() {
       }
     });
 
-    // 5. Auth Session Management
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // Authenticated, now get profile from DB
-        const userProfileRef = ref(db, `users/${user.uid}`);
-        onValue(userProfileRef, (snapshot) => {
-          const profile = snapshot.val();
-          if (profile && profile.active) {
-            setCurrentUser(profile);
-            localStorage.setItem('pasarku_current_user', JSON.stringify(profile));
-          } else {
-            setCurrentUser(null);
-          }
-           setIsInitialized(true);
-        }, { onlyOnce: true });
-      } else {
-        setCurrentUser(null);
-        setIsInitialized(true);
-      }
-    });
-
-    return () => {
-       unsubscribeAuth();
-    };
+    // 5. Auth Session
+    const savedSession = localStorage.getItem('pasarku_current_user');
+    if (savedSession) setCurrentUser(JSON.parse(savedSession));
+    
+    setIsInitialized(true);
   }, []);
 
   const handleLogout = () => {
-    signOut(auth);
     setCurrentUser(null);
     localStorage.removeItem('pasarku_current_user');
     setActiveTab('pembayaran');
