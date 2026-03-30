@@ -357,7 +357,7 @@ const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout, isOpen, onClo
             PASAR<span>KU</span>
           </div>
           <div className="nav-links">
-            {(currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
+            {(currentUser.role === 'ADMIN' || currentUser.role === 'VERIFIKATOR PAYMENT') && (
               <button 
                 className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
                 onClick={() => handleNavClick('dashboard')}
@@ -380,7 +380,7 @@ const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout, isOpen, onClo
               <span>🛒</span> Transaksi Harian
             </button>
 
-            {(currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
+            {(currentUser.role === 'ADMIN' || currentUser.role === 'VERIFIKATOR PAYMENT') && (
               <button 
                 className={`nav-item ${activeTab === 'verifikasi' ? 'active' : ''}`}
                 onClick={() => handleNavClick('verifikasi')}
@@ -407,7 +407,7 @@ const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout, isOpen, onClo
               </button>
             )}
 
-            {(currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
+            {(currentUser.role === 'ADMIN' || currentUser.role === 'VERIFIKATOR PAYMENT') && (
               <button 
                 className={`nav-item ${activeTab === 'riwayat' ? 'active' : ''}`}
                 onClick={() => handleNavClick('riwayat')}
@@ -569,7 +569,7 @@ function App() {
         onClose={() => setIsSidebarOpen(false)}
       />
       <main className="main-content">
-        {activeTab === 'dashboard' && (currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
+        {activeTab === 'dashboard' && (currentUser.role === 'ADMIN' || currentUser.role === 'VERIFIKATOR PAYMENT') && (
           <div className="page fade-in">
             <header className="page-header">
               <h1 className="page-title">Ringkasan Dashboard</h1>
@@ -621,7 +621,7 @@ function App() {
             <UserManagementTab users={Object.values(users || {})} />
           </div>
         )}
-        {activeTab === 'riwayat' && (currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
+        {activeTab === 'riwayat' && (currentUser.role === 'ADMIN' || currentUser.role === 'VERIFIKATOR PAYMENT') && (
           <div className="page fade-in">
             <header className="page-header">
               <h1 className="page-title">Riwayat Transaksi</h1>
@@ -631,7 +631,7 @@ function App() {
           </div>
         )}
 
-        {activeTab === 'verifikasi' && (currentUser.role === 'ADMIN' || currentUser.role === 'BENDAHARA') && (
+        {activeTab === 'verifikasi' && (currentUser.role === 'ADMIN' || currentUser.role === 'VERIFIKATOR PAYMENT') && (
           <div className="page fade-in">
             <header className="page-header">
               <h1 className="page-title">Verifikasi Pembayaran</h1>
@@ -789,7 +789,7 @@ const UserManagementTab = ({ users }) => {
                       style={{ padding: '4px 8px', fontSize: 12 }}
                     >
                       <option value="PETUGAS">PETUGAS</option>
-                      <option value="BENDAHARA">BENDAHARA</option>
+                      <option value="VERIFIKATOR PAYMENT">VERIFIKATOR PAYMENT</option>
                       <option value="ADMIN">ADMIN</option>
                     </select>
                   )}
