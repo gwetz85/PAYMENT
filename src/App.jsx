@@ -659,7 +659,9 @@ function App() {
 const ADMIN_FEE = 2500;
 
 const DashboardTab = ({ transactions, users }) => {
-  const totalRevenue = transactions.reduce((acc, t) => acc + (t.total || 0), 0);
+  const totalRevenue = transactions
+    .filter(t => t.status === 'LUNAS')
+    .reduce((acc, t) => acc + (t.total || 0), 0);
   const totalTransactions = transactions.length;
   const activeStaff = users.filter(u => u.active).length;
 
@@ -1151,12 +1153,15 @@ const DailyTransactionTab = ({ products, storeInfo }) => {
       id: "SHOP-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
       customerName: customerName || "Pelanggan Umum",
       items: cart,
+      productName: `Harian (${cart.length} item)`,
       subtotal: subtotal,
       total: subtotal,
       date: new Date().toLocaleString('id-ID'),
+      paidAt: new Date().toLocaleString('id-ID'),
       timestamp: Date.now(),
       storeInfo: storeInfo,
-      category: 'HARIAN'
+      category: 'HARIAN',
+      status: 'LUNAS'
     };
 
     try {
@@ -1940,7 +1945,6 @@ const TransactionHistoryTab = ({ transactions }) => {
 
   // Filter and Sort by timestamp (descending)
   const sortedTransactions = [...transactions]
-    .filter(t => t.status === 'LUNAS')
     .filter(t => 
       (t.id?.toLowerCase() || '').includes(searchTerm.toLowerCase()) || 
       (t.customerName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
@@ -1968,6 +1972,7 @@ const TransactionHistoryTab = ({ transactions }) => {
               <th>Pelanggan</th>
               <th>Layanan</th>
               <th>Total</th>
+              <th>Status</th>
               <th>Aksi</th>
             </tr>
           </thead>
@@ -1986,6 +1991,11 @@ const TransactionHistoryTab = ({ transactions }) => {
                   <td>{t.productName}</td>
                   <td style={{ fontWeight: 700, color: 'var(--primary)' }}>
                     Rp {t.total.toLocaleString()}
+                  </td>
+                  <td>
+                    <span className={`badge ${t.status === 'LUNAS' ? 'badge-success' : 'badge-warning'}`}>
+                      {t.status || 'PENDING'}
+                    </span>
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: 12 }}>
