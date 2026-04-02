@@ -856,6 +856,7 @@ const PaymentTab = ({ products, storeInfo }) => {
   });
   const [showReceipt, setShowReceipt] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
+  const [noAdminFee, setNoAdminFee] = useState(false);
 
   const selectedProduct = products.find(p => String(p.id) === String(formData.productId));
 
@@ -884,7 +885,7 @@ const PaymentTab = ({ products, storeInfo }) => {
       return;
     }
     
-    const currentAdminFee = selectedCategory === 'PULSA' ? 0 : ADMIN_FEE;
+    const currentAdminFee = (selectedCategory === 'PULSA' || noAdminFee) ? 0 : ADMIN_FEE;
     const subtotal = selectedProduct.price * formData.quantity;
     
     // BPJS Ketenagakerjaan Discount Logic
@@ -1049,7 +1050,7 @@ const PaymentTab = ({ products, storeInfo }) => {
                         Harga Satuan: Rp {selectedProduct.price.toLocaleString()}
                       </p>
                       <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
-                        Biaya Admin: Rp {(selectedCategory === 'PULSA' ? 0 : ADMIN_FEE).toLocaleString()}
+                        Biaya Admin: Rp {(selectedCategory === 'PULSA' || noAdminFee ? 0 : ADMIN_FEE).toLocaleString()}
                       </p>
                     </div>
                     <div style={{ textAlign: 'right' }}>
@@ -1062,12 +1063,27 @@ const PaymentTab = ({ products, storeInfo }) => {
                             if ([1, 3, 6, 9].includes(formData.quantity)) disc = 0.5;
                             else if (formData.quantity === 12) disc = 0.375;
                           }
-                          const admin = selectedCategory === 'PULSA' ? 0 : ADMIN_FEE;
+                          const admin = (selectedCategory === 'PULSA' || noAdminFee) ? 0 : ADMIN_FEE;
                           return (subtotal * (1 - disc) + admin).toLocaleString();
                         })()}
                       </p>
                     </div>
                   </div>
+
+                  {selectedCategory !== 'PULSA' && (
+                    <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8, background: '#fffbeb', padding: '10px 16px', borderRadius: 12, border: '1px solid #fef3c7' }}>
+                      <input 
+                        type="checkbox" 
+                        id="noAdminFee" 
+                        checked={noAdminFee} 
+                        onChange={(e) => setNoAdminFee(e.target.checked)}
+                        style={{ width: 18, height: 18, cursor: 'pointer' }}
+                      />
+                      <label htmlFor="noAdminFee" style={{ fontSize: 13, fontWeight: 600, color: '#92400e', cursor: 'pointer' }}>
+                        Hapus Biaya Admin untuk transaksi ini
+                      </label>
+                    </div>
+                  )}
                   {(() => {
                     const isBPJSKetenagakerjaan = selectedProduct?.name?.toUpperCase().includes("BPJS KETENAGAKERJAAN");
                     let discP = 0;
@@ -1938,6 +1954,25 @@ const TransactionHistoryTab = ({ transactions }) => {
     }
   };
 
+  const removeAdminFee = (ticket) => {
+    if (!ticket.adminFee || ticket.adminFee === 0) {
+      alert("Transaksi ini tidak memiliki biaya admin.");
+      return;
+    }
+
+    if (window.confirm(`Hapus biaya admin (Rp ${ticket.adminFee.toLocaleString()}) untuk transaksi ${ticket.id}? Total transaksi akan diperbarui.`)) {
+      const newTotal = ticket.total - ticket.adminFee;
+      update(ref(db, `transactions/${ticket.fbKey}`), { 
+        adminFee: 0,
+        total: newTotal
+      }).then(() => {
+        alert("Biaya admin berhasil dihapus!");
+      }).catch(() => {
+        alert("Gagal menghapus biaya admin.");
+      });
+    }
+  };
+
   const handlePrint = (ticket) => {
     setSelectedTicket(ticket);
     setShowReceipt(true);
@@ -2003,6 +2038,9 @@ const TransactionHistoryTab = ({ transactions }) => {
                         <button onClick={() => markAsLunas(t)} style={{ color: '#059669', background: 'none', fontWeight: 600, fontSize: 13 }}>LUNAS</button>
                       )}
                       <button onClick={() => handlePrint(t)} style={{ color: 'var(--primary)', background: 'none', fontWeight: 600, fontSize: 13 }}>Cetak</button>
+                      {t.adminFee > 0 && (
+                        <button onClick={() => removeAdminFee(t)} style={{ color: '#f59e0b', background: 'none', fontWeight: 600, fontSize: 13 }}>Hapus Admin</button>
+                      )}
                       <button onClick={() => deleteTransaction(t.fbKey)} style={{ color: '#ef4444', background: 'none', fontWeight: 600, fontSize: 13 }}>Hapus</button>
                     </div>
                   </td>
