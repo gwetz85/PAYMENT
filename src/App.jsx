@@ -2346,7 +2346,7 @@ const BPJSTKReceipt = ({ ticket, onBack }) => {
           <div className="tanda-terima-box">
              {/* STUB SIDE */}
              <div className="tanda-terima-stub">
-                <div style={{ fontWeight: 800, marginBottom: 20, borderBottom: '1px solid #000', paddingBottom: 5, fontSize: 15 }}>STUB ARSIP</div>
+                <div style={{ fontWeight: 800, marginBottom: 20, borderBottom: '1px solid #000', paddingBottom: 5, fontSize: 15 }}>STRUK ARSIP</div>
                 <div className="tanda-terima-stub-row">No : <span style={{ fontWeight: 700 }}>{ticket.id}</span></div>
                 <div className="tanda-terima-stub-row" style={{ marginTop: 10 }}>Telah terima dari :</div>
                 <div className="tanda-terima-stub-row" style={{ fontWeight: 800, fontSize: 14, textTransform: 'uppercase' }}>{ticket.customerName}</div>
@@ -2396,11 +2396,7 @@ const BPJSTKReceipt = ({ ticket, onBack }) => {
                    Rp. {ticket.total.toLocaleString('id-ID')}
                 </div>
 
-                <div className="tanda-terima-signature">
-                   <p style={{ marginBottom: 65, fontSize: 15 }}>Yang Menerima,</p>
-                   <p style={{ fontWeight: 800, fontSize: 18, textDecoration: 'underline' }}>{ticket.storeInfo.name.toUpperCase()}</p>
-                   <p style={{ fontSize: 12, marginTop: 4 }}>{ticket.date}</p>
-                </div>
+
                 
                 {/* Visual line to separate Stub and Main on screen, but print will use the dashed border */}
                 <div className="no-print" style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: '#eee' }}></div>
