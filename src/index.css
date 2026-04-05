@@ -636,3 +636,106 @@ input:focus {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* --- TANDA TERIMA BPJS TK --- */
+.tanda-terima-wrapper {
+  background: white;
+  padding: 40px 20px;
+  width: 100%;
+}
+
+.tanda-terima-box {
+  display: flex;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 420px;
+  background: white;
+  border: 1px solid #000;
+  color: #000;
+  margin: 0 auto;
+  font-family: serif; /* More formal for receipts */
+}
+
+.tanda-terima-stub {
+  width: 250px;
+  border-right: 2px dashed #444;
+  padding: 20px;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tanda-terima-main {
+  flex: 1;
+  padding: 30px 50px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.tanda-terima-main-title {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  margin-bottom: 40px;
+  margin-top: 10px;
+}
+
+.tanda-terima-main-row {
+  display: flex;
+  margin-bottom: 18px;
+  align-items: baseline;
+}
+
+.tanda-terima-main-label {
+  width: 180px;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.tanda-terima-main-value {
+  flex: 1;
+  border-bottom: 1px dotted #000;
+  padding: 0 10px;
+  font-weight: 700;
+  min-height: 24px;
+  font-size: 16px;
+}
+
+.tanda-terima-rp-box {
+  border: 4px double #000;
+  margin-top: 30px;
+  padding: 15px 35px;
+  font-size: 28px;
+  font-weight: 900;
+  display: inline-block;
+  min-width: 250px;
+}
+
+.tanda-terima-signature {
+  position: absolute;
+  bottom: 50px;
+  right: 60px;
+  text-align: center;
+  min-width: 200px;
+}
+
+.stub-dots {
+  border-bottom: 1px dotted #000;
+  display: inline-block;
+  min-width: 100px;
+  margin-left: 5px;
+}
+
+@media print {
+  .tanda-terima-box {
+    border: 1px solid #000 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+  .tanda-terima-wrapper {
+    padding: 0 !important;
+  }
+}

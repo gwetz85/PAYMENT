@@ -424,6 +424,24 @@ const Sidebar = ({ activeTab, setActiveTab, currentUser, onLogout, isOpen, onClo
                 <span>📂</span> Data Transaksi
               </button>
             )}
+
+            {currentUser.role === 'ADMIN' && (
+              <button 
+                className={`nav-item ${activeTab === 'bpjstk' ? 'active' : ''}`}
+                onClick={() => handleNavClick('bpjstk')}
+              >
+                <span>🏢</span> BPJS TK Business
+              </button>
+            )}
+
+            {currentUser.role === 'ADMIN' && (
+              <button 
+                className={`nav-item ${activeTab === 'bpjstk_settings' ? 'active' : ''}`}
+                onClick={() => handleNavClick('bpjstk_settings')}
+              >
+                <span>🛠️</span> Paket BPJS TK
+              </button>
+            )}
           </div>
         </div>
 
@@ -462,6 +480,7 @@ function App() {
     footer: "Terima kasih telah belanja di PASARKU!"
   });
   const [products, setProducts] = useState({});
+  const [bpjstkPackages, setBPJSTKPackages] = useState({});
   const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
@@ -519,7 +538,15 @@ function App() {
       }
     });
 
-    // 5. Auth Session
+    // 5. Sync BPJS TK Packages
+    const bRef = ref(db, 'bpjstk_packages');
+    onValue(bRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) setBPJSTKPackages(data);
+      else setBPJSTKPackages({});
+    });
+
+    // 6. Auth Session
     const savedSession = localStorage.getItem('pasarku_current_user');
     if (savedSession) {
       const user = JSON.parse(savedSession);
@@ -638,6 +665,26 @@ function App() {
               <p className="page-subtitle">Verifikasi transaksi pending dan masukkan no. referensi</p>
             </header>
             <VerificationTab transactions={transactions} />
+          </div>
+        )}
+
+        {activeTab === 'bpjstk' && currentUser.role === 'ADMIN' && (
+          <div className="page fade-in">
+            <header className="page-header">
+              <h1 className="page-title">BPJS TK Business</h1>
+              <p className="page-subtitle">Pembayaran Iuran BPJS Ketenagakerjaan Perusahaan</p>
+            </header>
+            <BPJSTKTab packages={Object.values(bpjstkPackages || {})} storeInfo={storeInfo} />
+          </div>
+        )}
+
+        {activeTab === 'bpjstk_settings' && currentUser.role === 'ADMIN' && (
+          <div className="page fade-in">
+            <header className="page-header">
+              <h1 className="page-title">Paket BPJS TK</h1>
+              <p className="page-subtitle">Kelola daftar layanan dan nominal BPJS TK</p>
+            </header>
+            <BPJSTKSettingsTab packages={Object.values(bpjstkPackages || {})} />
           </div>
         )}
 
@@ -1928,6 +1975,9 @@ const TransactionHistoryTab = ({ transactions }) => {
     if (selectedTicket.category === 'HARIAN') {
       return <SupermarketReceipt ticket={selectedTicket} onBack={() => setShowReceipt(false)} />;
     }
+    if (selectedTicket.category === 'BPJS_TK') {
+      return <BPJSTKReceipt ticket={selectedTicket} onBack={() => setShowReceipt(false)} />;
+    }
     return <Receipt ticket={selectedTicket} onBack={() => setShowReceipt(false)} />;
   }
 
@@ -2050,6 +2100,285 @@ const TransactionHistoryTab = ({ transactions }) => {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+};
+
+// --- BPJS TK COMPONENTS ---
+
+const BPJSTKSettingsTab = ({ packages }) => {
+  const [newPkg, setNewPkg] = useState({ name: '', nominal: 0, denda: 0 });
+  
+  const addPkg = () => {
+    if (!newPkg.name) return;
+    const pkgRef = ref(db, 'bpjstk_packages');
+    push(pkgRef, newPkg);
+    setNewPkg({ name: '', nominal: 0, denda: 0 });
+  };
+
+  const deletePkg = (id) => {
+    if (window.confirm('Hapus paket ini?')) {
+      remove(ref(db, `bpjstk_packages/${id}`));
+    }
+  };
+
+  return (
+    <div className="card">
+      <h2 style={{ marginBottom: 20 }}>Manajemen Layanan BPJS TK</h2>
+      <div className="grid" style={{ marginBottom: 30, gap: 12 }}>
+        <div className="form-group">
+           <label>Nama Layanan</label>
+           <input placeholder="Contoh: JHT, JKK, dll" value={newPkg.name} onChange={e => setNewPkg({...newPkg, name: e.target.value})} />
+        </div>
+        <div className="form-group">
+           <label>Nominal (Rp)</label>
+           <input type="number" placeholder="0" value={newPkg.nominal} onChange={e => setNewPkg({...newPkg, nominal: parseInt(e.target.value) || 0})} />
+        </div>
+        <div className="form-group">
+           <label>Denda (Rp)</label>
+           <input type="number" placeholder="0" value={newPkg.denda} onChange={e => setNewPkg({...newPkg, denda: parseInt(e.target.value) || 0})} />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 20 }}>
+           <button onClick={addPkg} className="btn btn-primary" style={{ width: '100%', padding: '12px' }}>Tambah Layanan</button>
+        </div>
+      </div>
+      
+      <div className="table-responsive">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Layanan</th>
+              <th>Nominal</th>
+              <th>Denda</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {packages.map((pkg, idx) => (
+              <tr key={pkg.fbKey || idx}>
+                <td style={{ fontWeight: 600 }}>{pkg.name}</td>
+                <td>Rp {pkg.nominal?.toLocaleString()}</td>
+                <td style={{ color: pkg.denda > 0 ? '#ef4444' : 'inherit' }}>Rp {pkg.denda?.toLocaleString()}</td>
+                <td>
+                  <button onClick={() => deletePkg(pkg.fbKey)} style={{ color: '#ef4444', background: 'none', fontWeight: 600 }}>Hapus</button>
+                </td>
+              </tr>
+            ))}
+            {packages.length === 0 && <tr><td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>Belum ada layanan BPJS TK. Tambahkan di atas.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const BPJSTKTab = ({ packages, storeInfo }) => {
+  const [formData, setFormData] = useState({ companyName: '', npp: '', kelas: '' });
+  const [selectedPackages, setSelectedPackages] = useState([]);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [currentTicket, setCurrentTicket] = useState(null);
+
+  const togglePackage = (pkg) => {
+    const isSelected = selectedPackages.find(p => p.fbKey === pkg.fbKey);
+    if (isSelected) {
+      setSelectedPackages(selectedPackages.filter(p => p.fbKey !== pkg.fbKey));
+    } else {
+      setSelectedPackages([...selectedPackages, pkg]);
+    }
+  };
+
+  const handleCheckout = async () => {
+    if (!formData.companyName || selectedPackages.length === 0) {
+      alert("Mohon isi Nama Perusahaan dan pilih minimal satu layanan.");
+      return;
+    }
+
+    const totalNominal = selectedPackages.reduce((acc, p) => acc + (p.nominal || 0), 0);
+    const totalDenda = selectedPackages.reduce((acc, p) => acc + (p.denda || 0), 0);
+    const total = totalNominal + totalDenda;
+
+    const ticket = {
+      id: "BTK-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
+      category: 'BPJS_TK',
+      customerName: formData.companyName,
+      npp: formData.npp,
+      kelas: formData.kelas,
+      items: selectedPackages,
+      total: total,
+      date: new Date().toLocaleString('id-ID'),
+      timestamp: Date.now(),
+      status: 'LUNAS',
+      storeInfo: storeInfo,
+      productName: `BPJS TK (${selectedPackages.length} Layanan)`
+    };
+
+    try {
+      await push(ref(db, 'transactions'), ticket);
+      setCurrentTicket(ticket);
+      setShowReceipt(true);
+    } catch (err) {
+      alert("Gagal menyimpan transaksi.");
+    }
+  };
+
+  if (showReceipt) return <BPJSTKReceipt ticket={currentTicket} onBack={() => setShowReceipt(false)} />;
+
+  return (
+    <div className="grid harian-layout" style={{ gridTemplateColumns: '1fr 350px', alignItems: 'start' }}>
+      <div className="card">
+        <h2 style={{ marginBottom: 20 }}>Daftar Layanan BPJS TK</h2>
+        <div className="service-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+          {packages.map((pkg) => {
+            const isSelected = selectedPackages.find(p => p.fbKey === pkg.fbKey);
+            return (
+              <div 
+                key={pkg.fbKey} 
+                className={`service-card ${isSelected ? 'selected' : ''}`}
+                onClick={() => togglePackage(pkg)}
+                style={{ textAlign: 'left', padding: 20 }}
+              >
+                <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 8 }}>{pkg.name}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
+                   <span style={{ color: 'var(--text-muted)' }}>Nominal:</span>
+                   <span style={{ fontWeight: 600 }}>Rp {pkg.nominal.toLocaleString()}</span>
+                </div>
+                {pkg.denda > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Denda:</span>
+                    <span style={{ fontWeight: 600, color: '#ef4444' }}>Rp {pkg.denda.toLocaleString()}</span>
+                  </div>
+                )}
+                {isSelected && <div style={{ marginTop: 12, fontSize: 11, color: 'var(--primary)', fontWeight: 800, textAlign: 'right' }}>✓ TERPILIH</div>}
+              </div>
+            );
+          })}
+          {packages.length === 0 && <p style={{ color: 'var(--text-muted)', padding: 20 }}>Belum ada paket BPJS TK yang dikonfigurasi ADMIN.</p>}
+        </div>
+      </div>
+
+      <div className="card" style={{ position: 'sticky', top: 20 }}>
+        <h2 style={{ marginBottom: 20 }}>Rincian Tagihan</h2>
+        <div className="form-group">
+          <label>Nama Perusahaan</label>
+          <input type="text" value={formData.companyName} onChange={e => setFormData({...formData, companyName: e.target.value.toUpperCase()})} placeholder="PT. CONTOH ABADI" />
+        </div>
+        <div className="form-group">
+          <label>NPP</label>
+          <input type="text" value={formData.npp} onChange={e => setFormData({...formData, npp: e.target.value})} placeholder="Nomor NPP..." />
+        </div>
+        <div className="form-group">
+          <label>Kelas (Opsional)</label>
+          <input type="text" value={formData.kelas} onChange={e => setFormData({...formData, kelas: e.target.value})} placeholder="PPU / BPU..." />
+        </div>
+
+        <div style={{ borderTop: '2px solid var(--border-color)', paddingTop: 16, marginTop: 24 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase' }}>Item Terpilih:</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+            {selectedPackages.map((p, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                <span>{p.name}</span>
+                <span style={{ fontWeight: 600 }}>Rp {(p.nominal + p.denda).toLocaleString()}</span>
+              </div>
+            ))}
+            {selectedPackages.length === 0 && <p style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>Belum ada item dipilih</p>}
+          </div>
+
+          <div style={{ borderTop: '1.5px dashed #cbd5e1', paddingTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontWeight: 700 }}>TOTAL</span>
+            <span style={{ fontWeight: 800, fontSize: 22, color: 'var(--primary)' }}>
+              Rp {selectedPackages.reduce((acc, p) => acc + (p.nominal + p.denda), 0).toLocaleString()}
+            </span>
+          </div>
+          
+          <button 
+            disabled={selectedPackages.length === 0 || !formData.companyName}
+            onClick={handleCheckout}
+            className="btn btn-primary" 
+            style={{ width: '100%', marginTop: 24, padding: 16, fontSize: 15, opacity: (selectedPackages.length === 0 || !formData.companyName) ? 0.5 : 1 }}
+          >
+            Selesaikan & Cetak Kwitansi
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const BPJSTKReceipt = ({ ticket, onBack }) => {
+  const handlePrint = () => window.print();
+  
+  const terbilangText = terbilang(ticket.total) + " rupiah";
+  const displayServices = ticket.items.map(p => p.name).join(', ');
+
+  return (
+    <div className="fade-in">
+       <div className="tanda-terima-wrapper">
+          <div className="tanda-terima-box">
+             {/* STUB SIDE */}
+             <div className="tanda-terima-stub">
+                <div style={{ fontWeight: 800, marginBottom: 20, borderBottom: '1px solid #000', paddingBottom: 5, fontSize: 15 }}>STUB ARSIP</div>
+                <div className="tanda-terima-stub-row">No : <span style={{ fontWeight: 700 }}>{ticket.id}</span></div>
+                <div className="tanda-terima-stub-row" style={{ marginTop: 10 }}>Telah terima dari :</div>
+                <div className="tanda-terima-stub-row" style={{ fontWeight: 800, fontSize: 14, textTransform: 'uppercase' }}>{ticket.customerName}</div>
+                {ticket.npp && <div className="tanda-terima-stub-row">NPP: {ticket.npp}</div>}
+                <div className="tanda-terima-stub-row">Kelas : <span className="stub-dots">{ticket.kelas || '---'}</span></div>
+                <div className="tanda-terima-stub-row" style={{ marginTop: 10 }}>Uang sebesar :</div>
+                <div className="tanda-terima-stub-row" style={{ fontWeight: 800, border: '1px solid #000', padding: '4px 8px', marginTop: 4, display: 'inline-block' }}>Rp. {ticket.total.toLocaleString()}</div>
+                <div className="tanda-terima-stub-row" style={{ marginTop: 20 }}>Tanggal :</div>
+                <div className="tanda-terima-stub-row" style={{ fontWeight: 600 }}>{ticket.date.split(',')[0]}</div>
+                <div style={{ marginTop: 'auto', fontSize: 9, textAlign: 'center', opacity: 0.6 }}>CETAKAN SISTEM {ticket.storeInfo.name}</div>
+             </div>
+
+             {/* MAIN RECEIPT SIDE */}
+             <div className="tanda-terima-main">
+                <div className="tanda-terima-main-title">TANDA TERIMA</div>
+                <div style={{ position: 'absolute', top: 25, left: 50, fontWeight: 600, fontSize: 16 }}>No. : <span style={{ fontFamily: 'monospace' }}>{ticket.id}</span></div>
+                
+                <div style={{ marginTop: 20 }}>
+                  <div className="tanda-terima-main-row">
+                    <div className="tanda-terima-main-label">Telah Terima dari</div>
+                    <div className="tanda-terima-main-value" style={{ textTransform: 'uppercase' }}>
+                      {ticket.customerName} {ticket.npp ? ` - NPP: ${ticket.npp}` : ''}
+                    </div>
+                  </div>
+
+                  <div className="tanda-terima-main-row" style={{ margin: '25px 0' }}>
+                    <div className="tanda-terima-main-label">Uang Sebesar</div>
+                    <div className="tanda-terima-main-value" style={{ fontStyle: 'italic', background: '#f9f9f9', padding: '5px 10px' }}>
+                      {terbilangText.charAt(0).toUpperCase() + terbilangText.slice(1)}
+                    </div>
+                  </div>
+
+                  <div className="tanda-terima-main-row">
+                    <div className="tanda-terima-main-label">Guna Membayar</div>
+                    <div className="tanda-terima-main-value">
+                      Iuran BPJS Ketenagakerjaan: <strong>{displayServices}</strong> 
+                      {ticket.kelas ? ` Kelompok ${ticket.kelas}` : ''} 
+                      per tanggal {ticket.date.split(',')[0]}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="tanda-terima-rp-box">
+                   Rp. {ticket.total.toLocaleString('id-ID')}
+                </div>
+
+                <div className="tanda-terima-signature">
+                   <p style={{ marginBottom: 65, fontSize: 15 }}>Yang Menerima,</p>
+                   <p style={{ fontWeight: 800, fontSize: 18, textDecoration: 'underline' }}>{ticket.storeInfo.name.toUpperCase()}</p>
+                   <p style={{ fontSize: 12, marginTop: 4 }}>{ticket.date}</p>
+                </div>
+                
+                {/* Visual line to separate Stub and Main on screen, but print will use the dashed border */}
+                <div className="no-print" style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: '#eee' }}></div>
+             </div>
+          </div>
+       </div>
+
+       <div className="no-print" style={{ display: 'flex', gap: 12, marginTop: 32, justifyContent: 'center' }}>
+          <button onClick={onBack} className="btn" style={{ background: '#f1f5f9', color: '#475569' }}>← Kembali</button>
+          <button onClick={handlePrint} className="btn btn-primary" style={{ minWidth: 160 }}>Cetak Kwitansi</button>
+       </div>
     </div>
   );
 };
