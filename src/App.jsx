@@ -2185,7 +2185,7 @@ const BPJSTKSettingsTab = ({ packages }) => {
 };
 
 const BPJSTKTab = ({ packages, storeInfo }) => {
-  const [formData, setFormData] = useState({ companyName: '', npp: '', kelas: '' });
+  const [formData, setFormData] = useState({ companyName: '', npp: '', kelas: '', months: 1, note: '' });
   const [selectedPackages, setSelectedPackages] = useState([]);
   const [showReceipt, setShowReceipt] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
@@ -2208,7 +2208,7 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
 
     const totalNominal = selectedPackages.reduce((acc, p) => acc + (p.nominal || 0), 0);
     const totalDenda = selectedPackages.reduce((acc, p) => acc + (p.denda || 0), 0);
-    const total = totalNominal + totalDenda;
+    const total = (totalNominal * formData.months) + totalDenda;
 
     const ticket = {
       id: "BTK-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
@@ -2217,6 +2217,8 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
       npp: formData.npp,
       kelas: formData.kelas,
       items: selectedPackages,
+      months: formData.months,
+      note: formData.note,
       total: total,
       date: new Date().toLocaleString('id-ID'),
       timestamp: Date.now(),
@@ -2279,9 +2281,24 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
           <label>NPP</label>
           <input type="text" value={formData.npp} onChange={e => setFormData({...formData, npp: e.target.value})} placeholder="Nomor NPP..." />
         </div>
+        <div className="grid" style={{ gap: 12 }}>
+          <div className="form-group">
+            <label>Jumlah Bulan</label>
+            <input type="number" min="1" value={formData.months} onChange={e => setFormData({...formData, months: parseInt(e.target.value) || 1})} />
+          </div>
+          <div className="form-group">
+            <label>Kelas (Opsional)</label>
+            <input type="text" value={formData.kelas} onChange={e => setFormData({...formData, kelas: e.target.value})} placeholder="PPU / BPU..." />
+          </div>
+        </div>
         <div className="form-group">
-          <label>Kelas (Opsional)</label>
-          <input type="text" value={formData.kelas} onChange={e => setFormData({...formData, kelas: e.target.value})} placeholder="PPU / BPU..." />
+          <label>Keterangan Transaksi</label>
+          <textarea 
+            value={formData.note} 
+            onChange={e => setFormData({...formData, note: e.target.value})} 
+            placeholder="Contoh: Iuran Jan - Mar 2024..."
+            style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--border-color)', minHeight: '60px' }}
+          />
         </div>
 
         <div style={{ borderTop: '2px solid var(--border-color)', paddingTop: 16, marginTop: 24 }}>
@@ -2289,8 +2306,8 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
             {selectedPackages.map((p, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                <span>{p.name}</span>
-                <span style={{ fontWeight: 600 }}>Rp {(p.nominal + p.denda).toLocaleString()}</span>
+                <span>{p.name} {formData.months > 1 && <small style={{ color: 'var(--text-muted)' }}>(x{formData.months} bln)</small>}</span>
+                <span style={{ fontWeight: 600 }}>Rp {((p.nominal * formData.months) + (p.denda || 0)).toLocaleString()}</span>
               </div>
             ))}
             {selectedPackages.length === 0 && <p style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>Belum ada item dipilih</p>}
@@ -2299,7 +2316,7 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
           <div style={{ borderTop: '1.5px dashed #cbd5e1', paddingTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontWeight: 700 }}>TOTAL</span>
             <span style={{ fontWeight: 800, fontSize: 22, color: 'var(--primary)' }}>
-              Rp {selectedPackages.reduce((acc, p) => acc + (p.nominal + p.denda), 0).toLocaleString()}
+              Rp {selectedPackages.reduce((acc, p) => acc + ((p.nominal * formData.months) + (p.denda || 0)), 0).toLocaleString()}
             </span>
           </div>
           
@@ -2335,9 +2352,10 @@ const BPJSTKReceipt = ({ ticket, onBack }) => {
                 <div className="tanda-terima-stub-row" style={{ fontWeight: 800, fontSize: 14, textTransform: 'uppercase' }}>{ticket.customerName}</div>
                 {ticket.npp && <div className="tanda-terima-stub-row">NPP: {ticket.npp}</div>}
                 <div className="tanda-terima-stub-row">Kelas : <span className="stub-dots">{ticket.kelas || '---'}</span></div>
-                <div className="tanda-terima-stub-row" style={{ marginTop: 10 }}>Uang sebesar :</div>
+                <div className="tanda-terima-stub-row">Uang sebesar :</div>
                 <div className="tanda-terima-stub-row" style={{ fontWeight: 800, border: '1px solid #000', padding: '4px 8px', marginTop: 4, display: 'inline-block' }}>Rp. {ticket.total.toLocaleString()}</div>
-                <div className="tanda-terima-stub-row" style={{ marginTop: 20 }}>Tanggal :</div>
+                {ticket.note && <div className="tanda-terima-stub-row" style={{ marginTop: 5, fontSize: 10, fontStyle: 'italic' }}>Ket: {ticket.note}</div>}
+                <div className="tanda-terima-stub-row" style={{ marginTop: 15 }}>Tanggal :</div>
                 <div className="tanda-terima-stub-row" style={{ fontWeight: 600 }}>{ticket.date.split(',')[0]}</div>
                 <div style={{ marginTop: 'auto', fontSize: 9, textAlign: 'center', opacity: 0.6 }}>CETAKAN SISTEM {ticket.storeInfo.name}</div>
              </div>
@@ -2366,7 +2384,9 @@ const BPJSTKReceipt = ({ ticket, onBack }) => {
                     <div className="tanda-terima-main-label">Guna Membayar</div>
                     <div className="tanda-terima-main-value">
                       Iuran BPJS Ketenagakerjaan: <strong>{displayServices}</strong> 
+                      {ticket.months > 1 && ` selama ${ticket.months} Bulan`}
                       {ticket.kelas ? ` Kelompok ${ticket.kelas}` : ''} 
+                      {ticket.note ? ` (${ticket.note})` : ''} 
                       per tanggal {ticket.date.split(',')[0]}
                     </div>
                   </div>
