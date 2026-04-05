@@ -542,8 +542,11 @@ function App() {
     const bRef = ref(db, 'bpjstk_packages');
     onValue(bRef, (snapshot) => {
       const data = snapshot.val();
-      if (data) setBPJSTKPackages(data);
-      else setBPJSTKPackages({});
+      if (data) {
+        setBPJSTKPackages(Object.entries(data).map(([key, val]) => ({ ...val, fbKey: key })));
+      } else {
+        setBPJSTKPackages([]);
+      }
     });
 
     // 6. Auth Session
@@ -674,7 +677,7 @@ function App() {
               <h1 className="page-title">BPJS TK Business</h1>
               <p className="page-subtitle">Pembayaran Iuran BPJS Ketenagakerjaan Perusahaan</p>
             </header>
-            <BPJSTKTab packages={Object.values(bpjstkPackages || {})} storeInfo={storeInfo} />
+            <BPJSTKTab packages={bpjstkPackages || []} storeInfo={storeInfo} />
           </div>
         )}
 
@@ -684,7 +687,7 @@ function App() {
               <h1 className="page-title">Paket BPJS TK</h1>
               <p className="page-subtitle">Kelola daftar layanan dan nominal BPJS TK</p>
             </header>
-            <BPJSTKSettingsTab packages={Object.values(bpjstkPackages || {})} />
+            <BPJSTKSettingsTab packages={bpjstkPackages || []} />
           </div>
         )}
 
@@ -2109,11 +2112,19 @@ const TransactionHistoryTab = ({ transactions }) => {
 const BPJSTKSettingsTab = ({ packages }) => {
   const [newPkg, setNewPkg] = useState({ name: '', nominal: 0, denda: 0 });
   
-  const addPkg = () => {
-    if (!newPkg.name) return;
-    const pkgRef = ref(db, 'bpjstk_packages');
-    push(pkgRef, newPkg);
-    setNewPkg({ name: '', nominal: 0, denda: 0 });
+  const addPkg = async () => {
+    if (!newPkg.name || newPkg.nominal === 0) {
+      alert("Mohon isi Nama Layanan dan Nominal iuran.");
+      return;
+    }
+    try {
+      const pkgRef = ref(db, 'bpjstk_packages');
+      await push(pkgRef, newPkg);
+      setNewPkg({ name: '', nominal: 0, denda: 0 });
+      alert("Layanan BPJS TK berhasil ditambahkan!");
+    } catch (err) {
+      alert("Gagal menambahkan layanan: " + err.message);
+    }
   };
 
   const deletePkg = (id) => {
