@@ -480,7 +480,7 @@ function App() {
     footer: "Terima kasih telah belanja di PASARKU!"
   });
   const [products, setProducts] = useState({});
-  const [bpjstkPackages, setBPJSTKPackages] = useState({});
+  const [bpjstkPackages, setBPJSTKPackages] = useState([]);
   const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
@@ -2111,6 +2111,7 @@ const TransactionHistoryTab = ({ transactions }) => {
 
 const BPJSTKSettingsTab = ({ packages }) => {
   const [newPkg, setNewPkg] = useState({ name: '', nominal: 0, denda: 0 });
+  const safePackages = Array.isArray(packages) ? packages : [];
   
   const addPkg = async () => {
     if (!newPkg.name || newPkg.nominal === 0) {
@@ -2165,7 +2166,7 @@ const BPJSTKSettingsTab = ({ packages }) => {
             </tr>
           </thead>
           <tbody>
-            {packages.map((pkg, idx) => (
+            {safePackages.map((pkg, idx) => (
               <tr key={pkg.fbKey || idx}>
                 <td style={{ fontWeight: 600 }}>{pkg.name}</td>
                 <td>Rp {pkg.nominal?.toLocaleString()}</td>
@@ -2175,7 +2176,7 @@ const BPJSTKSettingsTab = ({ packages }) => {
                 </td>
               </tr>
             ))}
-            {packages.length === 0 && <tr><td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>Belum ada layanan BPJS TK. Tambahkan di atas.</td></tr>}
+            {safePackages.length === 0 && <tr><td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>Belum ada layanan BPJS TK. Tambahkan di atas.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -2188,6 +2189,7 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
   const [selectedPackages, setSelectedPackages] = useState([]);
   const [showReceipt, setShowReceipt] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
+  const safePackages = Array.isArray(packages) ? packages : [];
 
   const togglePackage = (pkg) => {
     const isSelected = selectedPackages.find(p => p.fbKey === pkg.fbKey);
@@ -2239,7 +2241,7 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
       <div className="card">
         <h2 style={{ marginBottom: 20 }}>Daftar Layanan BPJS TK</h2>
         <div className="service-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
-          {packages.map((pkg) => {
+          {safePackages.map((pkg) => {
             const isSelected = selectedPackages.find(p => p.fbKey === pkg.fbKey);
             return (
               <div 
@@ -2263,7 +2265,7 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
               </div>
             );
           })}
-          {packages.length === 0 && <p style={{ color: 'var(--text-muted)', padding: 20 }}>Belum ada paket BPJS TK yang dikonfigurasi ADMIN.</p>}
+          {safePackages.length === 0 && <p style={{ color: 'var(--text-muted)', padding: 20 }}>Belum ada paket BPJS TK yang dikonfigurasi ADMIN.</p>}
         </div>
       </div>
 
