@@ -654,7 +654,7 @@ input:focus {
 }
 
 .receipt-logo-bpjs {
-  height: 80px; /* Adjusted size for outside placement */
+  height: 45px; /* Adjusted to match bank logo size */
   width: auto;
 }
 
