@@ -637,105 +637,168 @@ input:focus {
   }
 }
 
-/* --- TANDA TERIMA BPJS TK --- */
-.tanda-terima-wrapper {
-  background: white;
-  padding: 40px 20px;
+/* --- MODERN ELECTRONIC RECEIPT (BPJS TK) --- */
+.modern-receipt-container {
   width: 100%;
-}
-
-.tanda-terima-box {
-  display: flex;
-  width: 100%;
-  max-width: 1000px;
-  min-height: 420px;
-  background: white;
-  border: 1px solid #000;
-  color: #000;
+  max-width: 800px;
   margin: 0 auto;
-  font-family: serif; /* More formal for receipts */
-}
-
-.tanda-terima-stub {
-  width: 250px;
-  border-right: 2px dashed #444;
   padding: 20px;
-  font-size: 13px;
-  display: flex;
-  flex-direction: column;
+  background-color: white;
+  color: #000;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.tanda-terima-main {
-  flex: 1;
-  padding: 30px 50px;
+.modern-receipt-box {
+  border: 1px solid #ddd;
+  padding: 30px;
   position: relative;
-  display: flex;
-  flex-direction: column;
+  background-color: white;
 }
 
-.tanda-terima-main-title {
+.modern-receipt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+}
+
+.receipt-logo-bpjs {
+  height: 60px;
+  width: auto;
+}
+
+.receipt-paid-status {
   text-align: center;
-  font-size: 32px;
-  font-weight: 700;
-  letter-spacing: 4px;
-  margin-bottom: 40px;
-  margin-top: 10px;
-}
-
-.tanda-terima-main-row {
-  display: flex;
-  margin-bottom: 18px;
-  align-items: baseline;
-}
-
-.tanda-terima-main-label {
-  width: 180px;
-  font-style: italic;
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.tanda-terima-main-value {
   flex: 1;
-  border-bottom: 1px dotted #000;
-  padding: 0 10px;
-  font-weight: 700;
-  min-height: 24px;
+}
+
+.receipt-paid-text {
   font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: #000;
 }
 
-.tanda-terima-rp-box {
+.receipt-timestamp {
+  font-size: 14px;
+  color: #333;
+}
+
+.modern-receipt-info-box {
   border: 4px double #000;
-  margin-top: 30px;
-  padding: 15px 35px;
-  font-size: 28px;
-  font-weight: 900;
-  display: inline-block;
-  min-width: 250px;
-}
-
-.tanda-terima-signature {
-  position: absolute;
-  bottom: 50px;
-  right: 60px;
+  padding: 15px;
   text-align: center;
-  min-width: 200px;
+  margin-bottom: 25px;
 }
 
-.stub-dots {
-  border-bottom: 1px dotted #000;
-  display: inline-block;
-  min-width: 100px;
-  margin-left: 5px;
+.info-box-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.info-box-content {
+  font-size: 20px;
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.modern-receipt-code-section {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.code-label {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.code-value {
+  font-size: 36px;
+  font-weight: 800;
+  color: #16a34a; /* Green */
+  letter-spacing: 2px;
+  margin-bottom: 5px;
+}
+
+.blth-value {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.modern-receipt-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.modern-receipt-table th {
+  border: 1px solid #000;
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  background-color: #fff;
+  text-align: center;
+}
+
+.modern-receipt-table td {
+  border: 1px solid #000;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.terbilang-modern-box {
+  width: 100%;
+  border: 1px solid #000;
+  padding: 10px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 14px;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+}
+
+.modern-receipt-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.validation-text {
+  font-size: 12px;
+  font-style: italic;
+  font-weight: 500;
+}
+
+.barcode-modern {
+  text-align: right;
+}
+
+.barcode-visual {
+  height: 40px;
+  width: 180px;
+  background: repeating-linear-gradient(
+    90deg,
+    #000,
+    #000 2px,
+    #fff 2px,
+    #fff 4px
+  );
+  margin-bottom: 5px;
+}
+
+.barcode-text {
+  font-size: 10px;
+  font-family: monospace;
+  letter-spacing: 1px;
 }
 
 @media print {
-  .tanda-terima-box {
-    border: 1px solid #000 !important;
-    max-width: none !important;
-    width: 100% !important;
-  }
-  .tanda-terima-wrapper {
+  .modern-receipt-box {
+    border: none !important;
     padding: 0 !important;
   }
 }
