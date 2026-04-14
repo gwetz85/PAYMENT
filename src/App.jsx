@@ -2401,10 +2401,6 @@ const ElectronicBPJSReceipt = ({ ticket, onBack }) => {
 
   return (
     <div className="modern-receipt-container fade-in">
-      {/* Outside Header Logo */}
-      <div className="receipt-outside-header">
-        <img src="/bpjs-logo.png" alt="BPJS Ketenagakerjaan" className="receipt-logo-bpjs" />
-      </div>
 
       <div className="modern-receipt-box" style={{ border: '1px solid #000', padding: '30px', position: 'relative', backgroundColor: 'white' }}>
         {/* Centered Internal Header */}
