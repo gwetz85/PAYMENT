@@ -2365,13 +2365,7 @@ const ElectronicBPJSReceipt = ({ ticket, onBack }) => {
         {/* Header Section */}
         <div className="modern-receipt-header">
           <div className="header-left">
-            <div className="bpjs-logo-placeholder" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 45, height: 45, background: '#166534', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: 24 }}>B</div>
-              <div style={{ lineHeight: 1 }}>
-                <div style={{ fontWeight: 800, fontSize: 18, color: '#166534' }}>BPJS</div>
-                <div style={{ fontWeight: 600, fontSize: 10, color: '#15803d' }}>Ketenagakerjaan</div>
-              </div>
-            </div>
+            <img src="/bpjs-logo.png" alt="BPJS Ketenagakerjaan" className="receipt-logo-bpjs" />
           </div>
           <div className="receipt-paid-status">
             <div className="receipt-paid-text">PAID</div>
