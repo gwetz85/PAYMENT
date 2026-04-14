@@ -646,42 +646,47 @@ input:focus {
   background-color: white;
   color: #000;
   font-family: 'Plus Jakarta Sans', sans-serif;
+  text-align: left;
 }
 
-.modern-receipt-box {
-  border: 1px solid #ddd;
-  padding: 30px;
-  position: relative;
-  background-color: white;
-}
-
-.modern-receipt-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 30px;
+.receipt-outside-header {
+  margin-bottom: 20px;
 }
 
 .receipt-logo-bpjs {
-  height: 120px;
+  height: 80px; /* Adjusted size for outside placement */
   width: auto;
 }
 
-.receipt-paid-status {
-  text-align: center;
-  flex: 1;
+.modern-receipt-header-centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 35px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 25px;
 }
 
 .receipt-paid-text {
   font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 5px;
+  font-weight: 800;
+  margin-bottom: 10px;
   color: #000;
+  letter-spacing: 2px;
+}
+
+.bank-logo-receipt {
+  height: 45px;
+  width: auto;
+  margin-bottom: 12px;
+  object-fit: contain;
 }
 
 .receipt-timestamp {
-  font-size: 14px;
-  color: #333;
+  font-size: 13px;
+  color: #444;
+  font-weight: 600;
 }
 
 .modern-receipt-info-box {

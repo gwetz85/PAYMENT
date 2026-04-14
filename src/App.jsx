@@ -963,7 +963,8 @@ const PaymentTab = ({ products, storeInfo }) => {
       status: selectedCategory === 'BPJS' ? 'MENUNGGU VERIFIKASI' : 'LUNAS',
       paidAt: selectedCategory === 'BPJS' ? null : new Date().toLocaleString('id-ID'),
       timestamp: Date.now(),
-      storeInfo: storeInfo
+      storeInfo: storeInfo,
+      bankChannel: isBPJSKetenagakerjaan ? (formData.bankChannel || 'BCA') : null
     };
     
     try {
@@ -988,7 +989,7 @@ const PaymentTab = ({ products, storeInfo }) => {
   };
 
   const handleProductClick = (id) => {
-    setFormData({ ...formData, productId: id });
+    setFormData({ ...formData, productId: id, bankChannel: 'BCA' });
     setStep(3);
   };
 
@@ -1168,10 +1169,27 @@ const PaymentTab = ({ products, storeInfo }) => {
                   </div>
                 </div>
 
+                {selectedCategory === 'BPJS' && selectedProduct?.name?.toUpperCase().includes("BPJS KETENAGAKERJAAN") && (
+                  <div className="form-group" style={{ marginTop: 20 }}>
+                    <label style={{ color: '#0f172a', fontWeight: 700 }}>Bank Pembayaran (Cetak Kwitansi)</label>
+                    <select 
+                      value={formData.bankChannel || 'BCA'} 
+                      onChange={e => setFormData({...formData, bankChannel: e.target.value})}
+                      className="select-input"
+                      style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #cbd5e1', background: 'white', fontWeight: 600 }}
+                    >
+                      <option value="BCA">BANK BCA</option>
+                      <option value="BNI">BANK BNI</option>
+                      <option value="BRI">BANK BRI</option>
+                      <option value="MANDIRI">BANK MANDIRI</option>
+                    </select>
+                  </div>
+                )}
+                
                 <button 
                   onClick={handlePayment}
                   className="btn btn-primary" 
-                  style={{ width: '100%', padding: 16, fontSize: 16 }}
+                  style={{ width: '100%', padding: 16, fontSize: 16, marginTop: 16, borderRadius: 12, fontWeight: 700 }}
                 >
                   Bayar Sekarang & Cetak
                 </button>
@@ -2229,7 +2247,8 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
       timestamp: Date.now(),
       status: 'LUNAS',
       storeInfo: storeInfo,
-      productName: `BPJS TK (${selectedPackages.length} Layanan)`
+      productName: `BPJS TK (${selectedPackages.length} Layanan)`,
+      bankChannel: formData.bankChannel
     };
 
     try {
@@ -2297,6 +2316,20 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
           </div>
         </div>
         <div className="form-group">
+          <label>Bank Pembayaran (Kwitansi)</label>
+          <select 
+            value={formData.bankChannel} 
+            onChange={e => setFormData({...formData, bankChannel: e.target.value})}
+            className="select-input"
+            style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'white' }}
+          >
+            <option value="BCA">BANK BCA</option>
+            <option value="BNI">BANK BNI</option>
+            <option value="BRI">BANK BRI</option>
+            <option value="MANDIRI">BANK MANDIRI</option>
+          </select>
+        </div>
+        <div className="form-group">
           <label>Keterangan Transaksi</label>
           <textarea 
             value={formData.note} 
@@ -2342,36 +2375,43 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
 const ElectronicBPJSReceipt = ({ ticket, onBack }) => {
   const handlePrint = () => window.print();
 
+  // Bank Logos Data
+  const bankLogos = {
+    BCA: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/1200px-Bank_Central_Asia.svg.png",
+    BNI: "https://upload.wikimedia.org/wikipedia/id/thumb/5/55/BNI_logo.svg/1200px-BNI_logo.svg.png",
+    BRI: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/BRI_Logo.svg/1200px-BRI_Logo.svg.png",
+    MANDIRI: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bank_Mandiri_logo_2016.svg/1200px-Bank_Mandiri_logo_2016.svg.png"
+  };
+
+  const selectedBankLogo = bankLogos[ticket.bankChannel?.toUpperCase()] || bankLogos.BCA;
+
   // Generate random 6 digit barcode text
   const [barcodeValue] = useState(() => Math.floor(100000 + Math.random() * 900000).toString());
 
   const terbilangText = terbilang(ticket.total) + " rupiah";
 
-  // Handle items display: BPJSTKTab uses ticket.items, PaymentTab uses single product
   const itemsToDisplay = ticket.items 
     ? ticket.items.filter(item => !item.name.toUpperCase().includes('JHT'))
     : [{ name: ticket.productName, nominal: ticket.price }];
 
-  // Split date to get BL/TH
   const dateParts = ticket.date.split(',')[0].split('/');
   const blth = dateParts.length >= 3 ? `${dateParts[1]}/${dateParts[2]}` : '--/----';
 
-  // Use nik or customerId
   const kodeBayar = ticket.nik || ticket.customerId || '-';
 
   return (
     <div className="modern-receipt-container fade-in">
-      <div className="modern-receipt-box">
-        {/* Header Section */}
-        <div className="modern-receipt-header">
-          <div className="header-left">
-            <img src="/bpjs-logo.png" alt="BPJS Ketenagakerjaan" className="receipt-logo-bpjs" />
-          </div>
-          <div className="receipt-paid-status">
-            <div className="receipt-paid-text">PAID</div>
-            <div className="receipt-timestamp">({ticket.date})</div>
-          </div>
-          <div className="header-right" style={{ width: 100 }}></div>
+      {/* Outside Header Logo */}
+      <div className="receipt-outside-header">
+        <img src="/bpjs-logo.png" alt="BPJS Ketenagakerjaan" className="receipt-logo-bpjs" />
+      </div>
+
+      <div className="modern-receipt-box" style={{ border: '1px solid #000', padding: '30px', position: 'relative', backgroundColor: 'white' }}>
+        {/* Centered Internal Header */}
+        <div className="modern-receipt-header-centered">
+          <div className="receipt-paid-text">PAID</div>
+          <img src={selectedBankLogo} alt={ticket.bankChannel || 'Bank'} className="bank-logo-receipt" />
+          <div className="receipt-timestamp">({ticket.date})</div>
         </div>
 
         {/* Info Box Section */}
@@ -2383,41 +2423,41 @@ const ElectronicBPJSReceipt = ({ ticket, onBack }) => {
         {/* Code Section */}
         <div className="modern-receipt-code-section">
           <div className="code-label">KODE BAYAR:</div>
-          <div className="code-value">{kodeBayar}</div>
+          <div className="code-value" style={{ color: '#16a34a', fontWeight: 800, fontSize: 36 }}>{kodeBayar}</div>
           <div className="blth-value">BLTH: {blth}</div>
         </div>
 
         {/* Table Section */}
-        <table className="modern-receipt-table">
+        <table className="modern-receipt-table" style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 20 }}>
           <thead>
             <tr>
-              <th style={{ textAlign: 'left' }}>RINCIAN IURAN</th>
-              <th style={{ width: 150 }}>NOMINAL</th>
-              <th style={{ width: 100 }}>DENDA</th>
+              <th style={{ border: '1px solid #000', padding: 8, fontSize: 13, fontWeight: 800, textAlign: 'left' }}>RINCIAN IURAN</th>
+              <th style={{ border: '1px solid #000', padding: 8, fontSize: 13, fontWeight: 800, width: 150, textAlign: 'center' }}>NOMINAL</th>
+              <th style={{ border: '1px solid #000', padding: 8, fontSize: 13, fontWeight: 800, width: 100, textAlign: 'center' }}>DENDA</th>
             </tr>
           </thead>
           <tbody>
             {itemsToDisplay.map((item, idx) => (
               <tr key={idx}>
-                <td>{item.name.toUpperCase()} ({ticket.months || 1} BLN)</td>
-                <td style={{ textAlign: 'right' }}>Rp. {((item.nominal || item.price) * (ticket.months || ticket.quantity || 1)).toLocaleString('id-ID')}</td>
-                <td style={{ textAlign: 'right' }}>Rp. .000</td>
+                <td style={{ border: '1px solid #000', padding: '8px 12px', fontSize: 13, fontWeight: 600 }}>{item.name.toUpperCase()} ({ticket.months || 1} BLN)</td>
+                <td style={{ border: '1px solid #000', padding: '8px 12px', fontSize: 13, fontWeight: 600, textAlign: 'right' }}>Rp. {((item.nominal || item.price) * (ticket.months || ticket.quantity || 1)).toLocaleString('id-ID')}</td>
+                <td style={{ border: '1px solid #000', padding: '8px 12px', fontSize: 13, fontWeight: 600, textAlign: 'right' }}>Rp. .000</td>
               </tr>
             ))}
             <tr>
-              <td style={{ textAlign: 'right', fontWeight: 800 }}>JUMLAH IURAN/DENDA:</td>
-              <td style={{ textAlign: 'right', fontWeight: 800 }}>Rp. {ticket.total.toLocaleString('id-ID')}</td>
-              <td style={{ textAlign: 'right', fontWeight: 800 }}>Rp. 0.00</td>
+              <td style={{ border: '1px solid #000', padding: '8px 12px', textAlign: 'right', fontWeight: 800 }}>JUMLAH IURAN/DENDA:</td>
+              <td style={{ border: '1px solid #000', padding: '8px 12px', textAlign: 'right', fontWeight: 800 }}>Rp. {ticket.total.toLocaleString('id-ID')}</td>
+              <td style={{ border: '1px solid #000', padding: '8px 12px', textAlign: 'right', fontWeight: 800 }}>Rp. 0.00</td>
             </tr>
             <tr style={{ background: '#f8fafc' }}>
-              <td style={{ textAlign: 'right', fontWeight: 900, fontSize: 16 }}>TOTAL YANG DIBAYAR:</td>
-              <td colSpan="2" style={{ textAlign: 'center', fontWeight: 900, fontSize: 20 }}>Rp. {ticket.total.toLocaleString('id-ID')}</td>
+              <td style={{ border: '1px solid #000', padding: '8px 12px', textAlign: 'right', fontWeight: 900, fontSize: 16 }}>TOTAL YANG DIBAYAR:</td>
+              <td colSpan="2" style={{ border: '1px solid #000', padding: '8px 12px', textAlign: 'center', fontWeight: 900, fontSize: 20 }}>Rp. {ticket.total.toLocaleString('id-ID')}</td>
             </tr>
           </tbody>
         </table>
 
         {/* Terbilang Section */}
-        <div className="terbilang-modern-box">
+        <div className="terbilang-modern-box" style={{ width: '100%', border: '1px solid #000', padding: 10, textAlign: 'center', fontWeight: 800, fontSize: 14, marginBottom: 30, textTransform: 'uppercase' }}>
           #{terbilangText}#
         </div>
 
