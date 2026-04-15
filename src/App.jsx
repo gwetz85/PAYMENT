@@ -2435,7 +2435,7 @@ const ElectronicBPJSReceipt = ({ ticket, onBack }) => {
           <tbody>
             {itemsToDisplay.map((item, idx) => (
               <tr key={idx}>
-                <td style={{ border: '1px solid #000', padding: '8px 12px', fontSize: 13, fontWeight: 600 }}>{item.name.toUpperCase()} ( {ticket.months || 1} ) BULAN</td>
+                <td style={{ border: '1px solid #000', padding: '8px 12px', fontSize: 13, fontWeight: 600 }}>{item.name.toUpperCase()} ( {ticket.months || ticket.quantity || 1} ) BULAN</td>
                 <td style={{ border: '1px solid #000', padding: '8px 12px', fontSize: 13, fontWeight: 600, textAlign: 'right' }}>Rp. {((item.nominal || item.price) * (ticket.months || ticket.quantity || 1)).toLocaleString('id-ID')}</td>
                 <td style={{ border: '1px solid #000', padding: '8px 12px', fontSize: 13, fontWeight: 600, textAlign: 'right' }}>Rp. .000</td>
               </tr>
