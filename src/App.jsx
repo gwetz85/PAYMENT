@@ -2344,7 +2344,7 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
             {selectedPackages.map((p, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                <span>{p.name} {formData.months > 1 && <small style={{ color: 'var(--text-muted)' }}>(x{formData.months} bln)</small>}</span>
+                <span>{p.name} {formData.months > 0 && <small style={{ color: 'var(--text-muted)' }}>( {formData.months} ) BULAN</small>}</span>
                 <span style={{ fontWeight: 600 }}>Rp {((p.nominal * formData.months) + (p.denda || 0)).toLocaleString()}</span>
               </div>
             ))}
@@ -2435,7 +2435,7 @@ const ElectronicBPJSReceipt = ({ ticket, onBack }) => {
           <tbody>
             {itemsToDisplay.map((item, idx) => (
               <tr key={idx}>
-                <td style={{ border: '1px solid #000', padding: '8px 12px', fontSize: 13, fontWeight: 600 }}>{item.name.toUpperCase()} ({ticket.months || 1} BLN)</td>
+                <td style={{ border: '1px solid #000', padding: '8px 12px', fontSize: 13, fontWeight: 600 }}>{item.name.toUpperCase()} ( {ticket.months || 1} ) BULAN</td>
                 <td style={{ border: '1px solid #000', padding: '8px 12px', fontSize: 13, fontWeight: 600, textAlign: 'right' }}>Rp. {((item.nominal || item.price) * (ticket.months || ticket.quantity || 1)).toLocaleString('id-ID')}</td>
                 <td style={{ border: '1px solid #000', padding: '8px 12px', fontSize: 13, fontWeight: 600, textAlign: 'right' }}>Rp. .000</td>
               </tr>
