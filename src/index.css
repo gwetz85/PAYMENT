@@ -819,9 +819,9 @@ input:focus {
 
 .bpjs-header {
   display: flex;
-  align-items: flex-start;
-  margin-bottom: 20px;
-  gap: 20px;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 0;
 }
 
 .bpjs-logo-container {
@@ -831,35 +831,34 @@ input:focus {
   flex-shrink: 0;
 }
 
+.bpjs-logo-crop {
+  width: 150px;
+  height: 42px;
+  overflow: hidden;
+}
+
 .bpjs-logo-img {
-  width: 180px;
+  width: 150px;
   height: auto;
   display: block;
 }
 
 .bpjs-tagline {
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 700;
   color: #10b981;
-  margin-top: 2px;
-  letter-spacing: 1.5px;
-}
-
-.bpjs-title-section {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: 10px;
+  margin-top: 1px;
+  letter-spacing: 1px;
 }
 
 .bpjs-kwitansi-title {
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 700;
   color: #334155;
   text-decoration: underline;
-  text-underline-offset: 8px;
+  text-underline-offset: 6px;
   letter-spacing: 1px;
+  white-space: nowrap;
 }
 
 .bpjs-divider {
