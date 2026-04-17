@@ -820,7 +820,7 @@ input:focus {
 .bpjs-header {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 28px;
   margin-bottom: 0;
 }
 
@@ -831,28 +831,33 @@ input:focus {
   flex-shrink: 0;
 }
 
+/*
+ * background-image crop:
+ * PNG is 1024x1024 (square). Displayed at 160px wide → 160px tall.
+ * BPJS+Ketenagakerjaan text lives at ~26%–63% of image height
+ * = pixel 42–101 of 160px. We crop:
+ *   background-position-y: -42px  → shifts image up, hiding top whitespace
+ *   height: 58px                  → shows up to pixel 100, cutting off subtitle
+ */
 .bpjs-logo-crop {
-  width: 150px;
-  height: 42px;
-  overflow: hidden;
-}
-
-.bpjs-logo-img {
-  width: 150px;
-  height: auto;
-  display: block;
+  width: 160px;
+  height: 58px;
+  background-image: url('/bpjs-logo.png');
+  background-size: 160px auto;
+  background-position: 0px -42px;
+  background-repeat: no-repeat;
 }
 
 .bpjs-tagline {
   font-size: 9px;
   font-weight: 700;
   color: #10b981;
-  margin-top: 1px;
-  letter-spacing: 1px;
+  margin-top: 2px;
+  letter-spacing: 1.5px;
 }
 
 .bpjs-kwitansi-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: #334155;
   text-decoration: underline;
