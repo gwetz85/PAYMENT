@@ -2208,7 +2208,20 @@ const BPJSTKSettingsTab = ({ packages }) => {
 };
 
 const BPJSTKTab = ({ packages, storeInfo }) => {
-  const [formData, setFormData] = useState({ companyName: '', npp: '', kelas: '', months: 1, note: '' });
+  const [formData, setFormData] = useState({ 
+    companyName: '', 
+    npp: '', 
+    kelas: '', 
+    months: 1, 
+    note: '',
+    address: '',
+    periode: '',
+    ketPembayaran: '',
+    nomJKKJKM: 0,
+    nomJHT: 0,
+    nomJP: 0,
+    bankChannel: 'BCA'
+  });
   const [selectedPackages, setSelectedPackages] = useState([]);
   const [showReceipt, setShowReceipt] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
@@ -2229,25 +2242,34 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
       return;
     }
 
-    const totalNominal = selectedPackages.reduce((acc, p) => acc + (p.nominal || 0), 0);
-    const totalDenda = selectedPackages.reduce((acc, p) => acc + (p.denda || 0), 0);
-    const total = (totalNominal * formData.months) + totalDenda;
+    const totalNominal = (formData.nomJKKJKM || 0) + (formData.nomJHT || 0) + (formData.nomJP || 0);
+    const total = totalNominal;
+
+    // Generate 10 random digits for Kwitansi Number
+    const random10Digits = Math.floor(1000000000 + Math.random() * 9000000000).toString();
 
     const ticket = {
-      id: "BTK-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
+      id: "BTX-" + Math.random().toString(36).substr(2, 6).toUpperCase(),
+      noKwitansi: random10Digits,
       category: 'BPJS_TK',
       customerName: formData.companyName,
-      nik: formData.npp, // Using npp field for NIK
+      nik: formData.npp,
+      address: formData.address,
+      periode: formData.periode,
+      untukPembayaran: formData.ketPembayaran,
+      nomJKKJKM: formData.nomJKKJKM,
+      nomJHT: formData.nomJHT,
+      nomJP: formData.nomJP,
       kelas: formData.kelas,
-      items: selectedPackages,
+      items: selectedPackages, // Keeping this for backward compat if needed, but using spec fields now
       months: formData.months,
       note: formData.note,
       total: total,
-      date: new Date().toLocaleString('id-ID'),
+      date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
       timestamp: Date.now(),
       status: 'LUNAS',
       storeInfo: storeInfo,
-      productName: `BPJS TK (${selectedPackages.length} Layanan)`,
+      productName: "BPJS KETENAGAKERJAAN",
       bankChannel: formData.bankChannel
     };
 
@@ -2263,65 +2285,80 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
   if (showReceipt) return <ElectronicBPJSReceipt ticket={currentTicket} onBack={() => setShowReceipt(false)} />;
 
   return (
-    <div className="grid harian-layout" style={{ gridTemplateColumns: '1fr 350px', alignItems: 'start' }}>
+    <div className="grid harian-layout" style={{ gridTemplateColumns: '1fr 400px', alignItems: 'start' }}>
       <div className="card">
-        <h2 style={{ marginBottom: 20 }}>Daftar Layanan BPJS TK</h2>
-        <div className="service-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
-          {safePackages.map((pkg) => {
-            const isSelected = selectedPackages.find(p => p.fbKey === pkg.fbKey);
-            return (
-              <div 
-                key={pkg.fbKey} 
-                className={`service-card ${isSelected ? 'selected' : ''}`}
-                onClick={() => togglePackage(pkg)}
-                style={{ textAlign: 'left', padding: 20 }}
-              >
-                <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 8 }}>{pkg.name}</p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
-                   <span style={{ color: 'var(--text-muted)' }}>Nominal:</span>
-                   <span style={{ fontWeight: 600 }}>Rp {pkg.nominal.toLocaleString()}</span>
-                </div>
-                {pkg.denda > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Denda:</span>
-                    <span style={{ fontWeight: 600, color: '#ef4444' }}>Rp {pkg.denda.toLocaleString()}</span>
-                  </div>
-                )}
-                {isSelected && <div style={{ marginTop: 12, fontSize: 11, color: 'var(--primary)', fontWeight: 800, textAlign: 'right' }}>✓ TERPILIH</div>}
-              </div>
-            );
-          })}
-          {safePackages.length === 0 && <p style={{ color: 'var(--text-muted)', padding: 20 }}>Belum ada paket BPJS TK yang dikonfigurasi ADMIN.</p>}
+        <h2 style={{ marginBottom: 24 }}>Data Tagihan & Iuran Program</h2>
+        <div className="grid" style={{ gap: 20 }}>
+          <div className="form-group">
+            <label>Program JKK & JKM (Nominal)</label>
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: 12, top: 12, fontWeight: 700, color: 'var(--text-muted)' }}>Rp</span>
+              <input 
+                type="number" style={{ paddingLeft: 40 }} 
+                value={formData.nomJKKJKM} 
+                onChange={e => setFormData({...formData, nomJKKJKM: parseInt(e.target.value) || 0})} 
+              />
+            </div>
+          </div>
+          <div className="form-group">
+            <label>Program JHT (Nominal)</label>
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: 12, top: 12, fontWeight: 700, color: 'var(--text-muted)' }}>Rp</span>
+              <input 
+                type="number" style={{ paddingLeft: 40 }} 
+                value={formData.nomJHT} 
+                onChange={e => setFormData({...formData, nomJHT: parseInt(e.target.value) || 0})} 
+              />
+            </div>
+          </div>
+          <div className="form-group">
+            <label>Program JP (Nominal)</label>
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: 12, top: 12, fontWeight: 700, color: 'var(--text-muted)' }}>Rp</span>
+              <input 
+                type="number" style={{ paddingLeft: 40 }} 
+                value={formData.nomJP} 
+                onChange={e => setFormData({...formData, nomJP: parseInt(e.target.value) || 0})} 
+              />
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 20, padding: 20, background: '#f8fafc', borderRadius: 16, border: '1px dashed var(--border-color)' }}>
+          <h3 style={{ fontSize: 16, marginBottom: 12 }}>Keterangan Tambahan</h3>
+          <div className="form-group">
+            <label>Alamat Lengkap</label>
+            <input type="text" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Masukkan alamat..." />
+          </div>
+          <div className="form-group">
+            <label>Untuk Pembayaran</label>
+            <input type="text" value={formData.ketPembayaran} onChange={e => setFormData({...formData, ketPembayaran: e.target.value})} placeholder="Contoh: Iuran BPJS Ketenagakerjaan..." />
+          </div>
         </div>
       </div>
 
       <div className="card" style={{ position: 'sticky', top: 20 }}>
-        <h2 style={{ marginBottom: 20 }}>Rincian Tagihan</h2>
+        <h2 style={{ marginBottom: 20 }}>Rincian Kwitansi</h2>
         <div className="form-group">
           <label>Nama Peserta / Perusahaan</label>
           <input type="text" value={formData.companyName} onChange={e => setFormData({...formData, companyName: e.target.value.toUpperCase()})} placeholder="PT. CONTOH ABADI / NAMA PESERTA" />
         </div>
         <div className="form-group">
-          <label>NIK</label>
+          <label>NIK / Nomor NPP</label>
           <input type="text" value={formData.npp} onChange={e => setFormData({...formData, npp: e.target.value})} placeholder="Masukkan NIK Peserta..." />
         </div>
-        <div className="grid" style={{ gap: 12 }}>
-          <div className="form-group">
-            <label>Jumlah Bulan</label>
-            <input type="number" min="1" value={formData.months} onChange={e => setFormData({...formData, months: parseInt(e.target.value) || 1})} />
-          </div>
-          <div className="form-group">
-            <label>Kelas (Opsional)</label>
-            <input type="text" value={formData.kelas} onChange={e => setFormData({...formData, kelas: e.target.value})} placeholder="PPU / BPU..." />
-          </div>
-        </div>
         <div className="form-group">
-          <label>Bank Pembayaran (Kwitansi)</label>
+          <label>Periode Pembayaran</label>
+          <input type="text" value={formData.periode} onChange={e => setFormData({...formData, periode: e.target.value})} placeholder="Contoh: Januari 2024..." />
+        </div>
+        
+        <div className="form-group">
+          <label>Bank Pembayaran (Logo di Kwitansi)</label>
           <select 
             value={formData.bankChannel} 
             onChange={e => setFormData({...formData, bankChannel: e.target.value})}
             className="select-input"
-            style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'white' }}
+            style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'white', fontWeight: 600 }}
           >
             <option value="BCA">BANK BCA</option>
             <option value="BNI">BANK BNI</option>
@@ -2329,42 +2366,22 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
             <option value="MANDIRI">BANK MANDIRI</option>
           </select>
         </div>
-        <div className="form-group">
-          <label>Keterangan Transaksi</label>
-          <textarea 
-            value={formData.note} 
-            onChange={e => setFormData({...formData, note: e.target.value})} 
-            placeholder="Contoh: Iuran Jan - Mar 2024..."
-            style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--border-color)', minHeight: '60px' }}
-          />
-        </div>
 
         <div style={{ borderTop: '2px solid var(--border-color)', paddingTop: 16, marginTop: 24 }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase' }}>Item Terpilih:</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
-            {selectedPackages.map((p, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                <span>{p.name} {formData.months > 0 && <small style={{ color: 'var(--text-muted)' }}>( {formData.months} ) BULAN</small>}</span>
-                <span style={{ fontWeight: 600 }}>Rp {((p.nominal * formData.months) + (p.denda || 0)).toLocaleString()}</span>
-              </div>
-            ))}
-            {selectedPackages.length === 0 && <p style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>Belum ada item dipilih</p>}
-          </div>
-
-          <div style={{ borderTop: '1.5px dashed #cbd5e1', paddingTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontWeight: 700 }}>TOTAL</span>
-            <span style={{ fontWeight: 800, fontSize: 22, color: 'var(--primary)' }}>
-              Rp {selectedPackages.reduce((acc, p) => acc + ((p.nominal * formData.months) + (p.denda || 0)), 0).toLocaleString()}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <span style={{ fontWeight: 700 }}>TOTAL BAYAR</span>
+            <span style={{ fontWeight: 800, fontSize: 24, color: 'var(--primary)' }}>
+              Rp {((formData.nomJKKJKM || 0) + (formData.nomJHT || 0) + (formData.nomJP || 0)).toLocaleString()}
             </span>
           </div>
           
           <button 
-            disabled={selectedPackages.length === 0 || !formData.companyName}
+            disabled={!formData.companyName || ((formData.nomJKKJKM + formData.nomJHT + formData.nomJP) === 0)}
             onClick={handleCheckout}
             className="btn btn-primary" 
-            style={{ width: '100%', marginTop: 24, padding: 16, fontSize: 15, opacity: (selectedPackages.length === 0 || !formData.companyName) ? 0.5 : 1 }}
+            style={{ width: '100%', padding: 16, fontSize: 16, fontWeight: 700, borderRadius: 12 }}
           >
-            Selesaikan & Cetak Struk
+            Cetak Kwitansi Pembayaran
           </button>
         </div>
       </div>
@@ -2375,103 +2392,103 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
 const ElectronicBPJSReceipt = ({ ticket, onBack }) => {
   const handlePrint = () => window.print();
 
-  // Bank Logos Data
-  const bankLogos = {
-    BCA: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/1200px-Bank_Central_Asia.svg.png",
-    BNI: "https://upload.wikimedia.org/wikipedia/id/thumb/5/55/BNI_logo.svg/1200px-BNI_logo.svg.png",
-    BRI: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/BRI_Logo.svg/1200px-BRI_Logo.svg.png",
-    MANDIRI: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bank_Mandiri_logo_2016.svg/1200px-Bank_Mandiri_logo_2016.svg.png"
-  };
-
-  const selectedBankLogo = bankLogos[ticket.bankChannel?.toUpperCase()] || bankLogos.BCA;
-
-  // Generate random 6 digit barcode text
-  const [barcodeValue] = useState(() => Math.floor(100000 + Math.random() * 900000).toString());
-
-  const terbilangText = terbilang(ticket.total) + " rupiah";
-
-  const itemsToDisplay = ticket.items 
-    ? ticket.items.filter(item => !item.name.toUpperCase().includes('JHT'))
-    : [{ name: ticket.productName, nominal: ticket.price }];
-
-  const dateParts = ticket.date.split(',')[0].split('/');
-  const blth = dateParts.length >= 3 ? `${dateParts[1]}/${dateParts[2]}` : '--/----';
-
-  const kodeBayar = ticket.nik || ticket.customerId || '-';
-
   return (
     <div className="modern-receipt-container fade-in">
-
-      <div className="modern-receipt-box" style={{ border: '1px solid #000', padding: '30px', position: 'relative', backgroundColor: 'white' }}>
-        {/* Centered Internal Header */}
-        <div className="modern-receipt-header-centered">
-          <div className="receipt-paid-text">PAID</div>
-          <img src={selectedBankLogo} alt={ticket.bankChannel || 'Bank'} className="bank-logo-receipt" />
-          <div className="receipt-timestamp">({ticket.date})</div>
+      <div className="bpjs-kwitansi-box">
+        {/* Header Section */}
+        <div className="bpjs-header">
+          <div className="bpjs-logo-container">
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/id/thumb/0/05/Logo_BPJS_Ketenagakerjaan.svg/2560px-Logo_BPJS_Ketenagakerjaan.svg.png" 
+              alt="BPJS Ketenagakerjaan" 
+              className="bpjs-main-logo"
+            />
+            <div className="bpjs-tagline">BAHAGIA, SEJAHTERA</div>
+          </div>
+          <div className="bpjs-title-section">
+            <h1 className="bpjs-kwitansi-title">KWITANSI PEMBAYARAN</h1>
+          </div>
         </div>
 
-        {/* Info Box Section */}
-        <div className="modern-receipt-info-box">
-          <div className="info-box-title">PEMBAYARAN BPJS KETENAGAKERJAAN</div>
-          <div className="info-box-content">{ticket.customerName}</div>
-        </div>
+        <div className="bpjs-divider"></div>
 
-        {/* Code Section */}
-        <div className="modern-receipt-code-section">
-          <div className="code-label">KODE BAYAR:</div>
-          <div className="code-value" style={{ color: '#16a34a', fontWeight: 800, fontSize: 36 }}>{kodeBayar}</div>
-          <div className="blth-value">BLTH: {blth}</div>
+        {/* Content Section */}
+        <div className="bpjs-content">
+          <div className="bpjs-row">
+            <span className="bpjs-label">No. Kwitansi</span>
+            <span className="bpjs-separator">:</span>
+            <span className="bpjs-value-dotted">{ticket.noKwitansi || ticket.id}</span>
+          </div>
+          <div className="bpjs-row">
+            <span className="bpjs-label">Tanggal</span>
+            <span className="bpjs-separator">:</span>
+            <span className="bpjs-value-dotted">{ticket.date}</span>
+          </div>
+          
+          <div className="bpjs-spacer"></div>
+
+          <div className="bpjs-row">
+            <span className="bpjs-label">Telah Terima Dari</span>
+            <span className="bpjs-separator">:</span>
+            <span className="bpjs-value-dotted full-width">{ticket.customerName}</span>
+          </div>
+          <div className="bpjs-row">
+            <span className="bpjs-label">Alamat</span>
+            <span className="bpjs-separator">:</span>
+            <span className="bpjs-value-dotted full-width">{ticket.address || '-'}</span>
+          </div>
+          
+          <div className="bpjs-spacer"></div>
+
+          <div className="bpjs-row">
+            <span className="bpjs-label">Untuk Pembayaran</span>
+            <span className="bpjs-separator">:</span>
+            <span className="bpjs-value-dotted full-width">{ticket.untukPembayaran || ticket.productName}</span>
+          </div>
+          <div className="bpjs-row">
+            <span className="bpjs-label">Periode</span>
+            <span className="bpjs-separator">:</span>
+            <span className="bpjs-value-dotted full-width">{ticket.periode || '-'}</span>
+          </div>
         </div>
 
         {/* Table Section */}
-        <table className="modern-receipt-table" style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 20 }}>
-          <thead>
-            <tr>
-              <th style={{ border: '1px solid #000', padding: 8, fontSize: 13, fontWeight: 800, textAlign: 'left' }}>RINCIAN IURAN</th>
-              <th style={{ border: '1px solid #000', padding: 8, fontSize: 13, fontWeight: 800, width: 150, textAlign: 'center' }}>NOMINAL</th>
-              <th style={{ border: '1px solid #000', padding: 8, fontSize: 13, fontWeight: 800, width: 100, textAlign: 'center' }}>DENDA</th>
-            </tr>
-          </thead>
-          <tbody>
-            {itemsToDisplay.map((item, idx) => (
-              <tr key={idx}>
-                <td style={{ border: '1px solid #000', padding: '8px 12px', fontSize: 13, fontWeight: 600 }}>{item.name.toUpperCase()} ( {ticket.months || ticket.quantity || 1} ) BULAN</td>
-                <td style={{ border: '1px solid #000', padding: '8px 12px', fontSize: 13, fontWeight: 600, textAlign: 'right' }}>Rp. {((item.nominal || item.price) * (ticket.months || ticket.quantity || 1)).toLocaleString('id-ID')}</td>
-                <td style={{ border: '1px solid #000', padding: '8px 12px', fontSize: 13, fontWeight: 600, textAlign: 'right' }}>Rp. .000</td>
+        <div className="bpjs-table-container">
+          <table className="bpjs-table">
+            <tbody>
+              <tr>
+                <td className="bpjs-table-label">Program JKK & JKM</td>
+                <td className="bpjs-table-value">Rp { (ticket.nomJKKJKM || 0).toLocaleString('id-ID') }</td>
               </tr>
-            ))}
-            <tr>
-              <td style={{ border: '1px solid #000', padding: '8px 12px', textAlign: 'right', fontWeight: 800 }}>JUMLAH IURAN/DENDA:</td>
-              <td style={{ border: '1px solid #000', padding: '8px 12px', textAlign: 'right', fontWeight: 800 }}>Rp. {ticket.total.toLocaleString('id-ID')}</td>
-              <td style={{ border: '1px solid #000', padding: '8px 12px', textAlign: 'right', fontWeight: 800 }}>Rp. 0.00</td>
-            </tr>
-            <tr style={{ background: '#f8fafc' }}>
-              <td style={{ border: '1px solid #000', padding: '8px 12px', textAlign: 'right', fontWeight: 900, fontSize: 16 }}>TOTAL YANG DIBAYAR:</td>
-              <td colSpan="2" style={{ border: '1px solid #000', padding: '8px 12px', textAlign: 'center', fontWeight: 900, fontSize: 20 }}>Rp. {ticket.total.toLocaleString('id-ID')}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        {/* Terbilang Section */}
-        <div className="terbilang-modern-box" style={{ width: '100%', border: '1px solid #000', padding: 10, textAlign: 'center', fontWeight: 800, fontSize: 14, marginBottom: 30, textTransform: 'uppercase' }}>
-          #{terbilangText}#
+              <tr>
+                <td className="bpjs-table-label">Program JHT</td>
+                <td className="bpjs-table-value">Rp { (ticket.nomJHT || 0).toLocaleString('id-ID') }</td>
+              </tr>
+              <tr>
+                <td className="bpjs-table-label">Program JP</td>
+                <td className="bpjs-table-value">Rp { (ticket.nomJP || 0).toLocaleString('id-ID') }</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         {/* Footer Section */}
-        <div className="modern-receipt-footer">
-          <div className="validation-text">
-            Dokumen ini adalah bukti pembayaran yang sah.
+        <div className="bpjs-footer">
+          <div className="bpjs-footer-left">
+            TERDAFTAR DI BPJS KETENAGAKERJAAN
           </div>
-          <div className="barcode-modern">
-            <div className="barcode-visual"></div>
-            <div className="barcode-text">C{barcodeValue}F14138E2704</div>
+          <div className="bpjs-footer-center">
+             <span className="bpjs-footer-icon">📞</span> Call Center : 175 | <span>www.bpjsketenagakerjaan.go.id</span>
+          </div>
+          <div className="bpjs-footer-right">
+             <div className="bpjs-pill">HIDUP TENANG DAN SEJAHTERA</div>
           </div>
         </div>
       </div>
 
       <div className="no-print" style={{ display: 'flex', gap: 12, marginTop: 32, justifyContent: 'center' }}>
-        <button onClick={onBack} className="btn" style={{ background: '#f1f5f9', color: '#475569' }}>← Kembali</button>
-        <button onClick={handlePrint} className="btn btn-primary" style={{ minWidth: 160 }}>Cetak Kwitansi</button>
+        <button onClick={onBack} className="btn" style={{ background: '#f1f5f9', color: '#475569', fontWeight: 600 }}>← Kembali</button>
+        <button onClick={handlePrint} className="btn btn-primary" style={{ minWidth: 160, fontWeight: 700 }}>Cetak Kwitansi</button>
       </div>
     </div>
   );

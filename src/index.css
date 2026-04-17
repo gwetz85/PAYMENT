@@ -798,7 +798,167 @@ input:focus {
 .barcode-text {
   font-size: 10px;
   font-family: monospace;
+}
+
+/* --- NEW BPJS KETENAGAKERJAAN KWITANSI STYLES --- */
+.bpjs-kwitansi-box {
+  background-color: #fff;
+  padding: 50px;
+  border: 1px solid #ddd;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0,0,0,0.05);
+}
+
+@media print {
+  .bpjs-kwitansi-box {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    padding: 30px !important;
+  }
+}
+
+.bpjs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.bpjs-logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.bpjs-main-logo {
+  height: 60px;
+  width: auto;
+}
+
+.bpjs-tagline {
+  font-size: 12px;
+  font-weight: 700;
+  color: #10b981; /* Green color */
+  margin-top: 4px;
   letter-spacing: 1px;
+}
+
+.bpjs-title-section {
+  flex: 1;
+  text-align: center;
+}
+
+.bpjs-kwitansi-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #334155;
+  text-decoration: underline;
+  text-underline-offset: 8px;
+  letter-spacing: 1px;
+}
+
+.bpjs-divider {
+  border-top: 2px solid #334155;
+  margin: 30px 0;
+}
+
+.bpjs-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bpjs-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.bpjs-label {
+  width: 150px;
+  font-weight: 700;
+  font-size: 15px;
+  color: #334155;
+}
+
+.bpjs-separator {
+  font-weight: 700;
+}
+
+.bpjs-value-dotted {
+  flex: 1;
+  border-bottom: 1.5px dotted #94a3b8;
+  padding-bottom: 2px;
+  font-weight: 600;
+  font-size: 15px;
+  min-height: 22px;
+}
+
+.bpjs-value-dotted.full-width {
+  flex: 1;
+}
+
+.bpjs-spacer {
+  height: 15px;
+}
+
+.bpjs-table-container {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.bpjs-table {
+  width: 100%;
+  max-width: 500px;
+  border-collapse: collapse;
+}
+
+.bpjs-table td {
+  border: 1px solid #475569;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.bpjs-table-label {
+  background-color: #fff;
+  width: 60%;
+}
+
+.bpjs-table-value {
+  text-align: right;
+  width: 40%;
+}
+
+.bpjs-footer {
+  margin-top: 80px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 15px;
+}
+
+.bpjs-footer-center {
+  text-align: center;
+}
+
+.bpjs-footer-icon {
+  margin-right: 5px;
+}
+
+.bpjs-pill {
+  background-color: #10b981;
+  color: white;
+  padding: 6px 16px;
+  border-radius: 99px;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.5px;
 }
 
 @media print {
