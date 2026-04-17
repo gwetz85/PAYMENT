@@ -906,14 +906,14 @@ input:focus {
 
 /*
  * object-fit crop: PNG 1024x1024, displayed at 210x210px via cover.
- * height:55px → window = (210-55)=155px × 36% = 55.8px start → shows y:56-111px
- * This captures BPJS+Ketenagakerjaan text and cuts off the subtitle.
+ * height:68px → window = (210-68)=142px × 34% = 48px start → shows y:48-116px
+ * Shows full BPJS+Ketenagakerjaan text. Subtitle starts at ~130px → safe.
  */
 .bpjs-logo-img {
   width: 210px;
-  height: 55px;
+  height: 68px;
   object-fit: cover;
-  object-position: 0 36%;
+  object-position: 0 34%;
   display: block;
 }
 
@@ -921,7 +921,7 @@ input:focus {
   font-size: 10px;
   font-weight: 700;
   color: #10b981;
-  margin-top: 3px;
+  margin-top: 6px;
   letter-spacing: 1.5px;
 }
 
