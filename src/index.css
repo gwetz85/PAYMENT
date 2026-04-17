@@ -843,11 +843,11 @@ input:focus {
   .bpjs-header {
     margin-bottom: 0 !important;
   }
-  .bpjs-logo-crop {
-    width: 100px !important;
+  .bpjs-logo-img {
+    width: 110px !important;
     height: 36px !important;
-    background-size: 100px auto !important;
-    background-position: 0 -26px !important;
+    object-fit: cover !important;
+    object-position: 0 38% !important;
   }
   .bpjs-tagline {
     font-size: 7px !important;
@@ -905,20 +905,18 @@ input:focus {
 }
 
 /*
- * background-image crop:
- * PNG is 1024x1024 (square). Displayed at 160px wide → 160px tall.
- * BPJS+Ketenagakerjaan text lives at ~26%–63% of image height
- * = pixel 42–101 of 160px. We crop:
- *   background-position-y: -42px  → shifts image up, hiding top whitespace
- *   height: 58px                  → shows up to pixel 100, cutting off subtitle
+ * object-fit crop technique (prints reliably unlike background-image):
+ * PNG is 1024x1024 square. With width:160px height:52px + object-fit:cover,
+ * the image is scaled to 160×160, then 52px window is shown.
+ * object-position: 0 38% → starts at y = (160-52)*0.38 = 41px
+ * This shows pixel 41–93, which is the BPJS+Ketenagakerjaan text area.
  */
-.bpjs-logo-crop {
+.bpjs-logo-img {
   width: 160px;
-  height: 58px;
-  background-image: url('/bpjs-logo.png');
-  background-size: 160px auto;
-  background-position: 0px -42px;
-  background-repeat: no-repeat;
+  height: 52px;
+  object-fit: cover;
+  object-position: 0 38%;
+  display: block;
 }
 
 .bpjs-tagline {
