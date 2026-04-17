@@ -313,10 +313,18 @@ input:focus {
   background-color: var(--primary-hover);
 }
 
+/* ===== BPJS KWITANSI: Half-A4 Page Size (21cm x 14.85cm) ===== */
+@page {
+  size: 21cm 14.85cm;
+  margin: 0;
+}
+
 /* Print Visibility Fix */
 @media print {
   body {
     background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
   .sidebar, 
@@ -347,13 +355,22 @@ input:focus {
   }
 
   .receipt-container {
-    margin: 0 auto !important;
+    margin: 0 !important;
     padding: 0 !important;
     box-shadow: none !important;
     border: none !important;
     width: 100% !important;
     max-width: none !important;
     display: block !important;
+  }
+
+  .modern-receipt-container {
+    width: 21cm !important;
+    max-width: 21cm !important;
+    height: 14.85cm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
   }
 
   .card {
@@ -811,9 +828,65 @@ input:focus {
 
 @media print {
   .bpjs-kwitansi-box {
-    border: 1px solid #000 !important;
+    width: 21cm !important;
+    height: 14.85cm !important;
+    box-sizing: border-box !important;
+    border: 1px solid #ccc !important;
     box-shadow: none !important;
-    padding: 30px !important;
+    padding: 16px 28px !important;
+    overflow: hidden !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Scale down content to fit half-A4 */
+  .bpjs-header {
+    margin-bottom: 0 !important;
+  }
+  .bpjs-logo-crop {
+    width: 100px !important;
+    height: 36px !important;
+    background-size: 100px auto !important;
+    background-position: 0 -26px !important;
+  }
+  .bpjs-tagline {
+    font-size: 7px !important;
+    margin-top: 1px !important;
+  }
+  .bpjs-kwitansi-title {
+    font-size: 16px !important;
+  }
+  .bpjs-divider {
+    margin: 8px 0 !important;
+  }
+  .bpjs-content {
+    gap: 4px !important;
+  }
+  .bpjs-label {
+    font-size: 11px !important;
+    width: 120px !important;
+  }
+  .bpjs-value-dotted {
+    font-size: 11px !important;
+  }
+  .bpjs-spacer {
+    height: 4px !important;
+  }
+  .bpjs-table-container {
+    margin-top: 10px !important;
+  }
+  .bpjs-table td {
+    padding: 5px 12px !important;
+    font-size: 11px !important;
+  }
+  .bpjs-footer {
+    margin-top: 12px !important;
+    padding-top: 8px !important;
+    font-size: 9px !important;
+  }
+  .bpjs-pill {
+    font-size: 9px !important;
+    padding: 3px 10px !important;
   }
 }
 
