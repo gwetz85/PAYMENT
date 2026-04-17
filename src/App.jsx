@@ -2404,7 +2404,9 @@ const ElectronicBPJSReceipt = ({ ticket, onBack }) => {
         {/* ── HEADER ── */}
         <div className="bpjs-header">
           <div className="bpjs-logo-container">
-            <img src="/bpjs-logo.png" alt="BPJS Ketenagakerjaan" className="bpjs-logo-img" />
+            <div className="bpjs-logo-crop">
+              <img src="/bpjs-logo.png" alt="BPJS Ketenagakerjaan" className="bpjs-logo-img" />
+            </div>
           </div>
           <h1 className="bpjs-kwitansi-title">KWITANSI PEMBAYARAN</h1>
         </div>

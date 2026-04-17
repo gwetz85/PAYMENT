@@ -843,11 +843,15 @@ input:focus {
   .bpjs-header {
     margin-bottom: 0 !important;
   }
+  .bpjs-logo-crop {
+    width: 150px !important;
+    height: 51px !important;
+    overflow: hidden !important;
+  }
   .bpjs-logo-img {
-    width: 110px !important;
-    height: 36px !important;
-    object-fit: cover !important;
-    object-position: 0 38% !important;
+    width: 150px !important;
+    height: auto !important;
+    margin-top: -42px !important;
   }
   .bpjs-tagline {
     font-size: 7px !important;
@@ -905,16 +909,24 @@ input:focus {
 }
 
 /*
- * object-fit crop: PNG 1024x1024, displayed at 210x210px via cover.
- * height:68px → window = (210-68)=142px × 34% = 48px start → shows y:48-116px
- * Shows full BPJS+Ketenagakerjaan text. Subtitle starts at ~130px → safe.
+ * Crop technique: overflow:hidden on wrapper + negative margin-top on img.
+ * PNG 1024x1024 (square). Displayed at width:240px → full height:240px.
+ * Top whitespace: ~28% of 240 = 67px  → margin-top: -67px (skip whitespace)
+ * Ketenagakerjaan ends at: ~62% of 240 = 149px
+ * Subtitle starts at:      ~65% of 240 = 156px
+ * Crop window height: 149 - 67 = 82px → shows logo only, no subtitle
  */
+.bpjs-logo-crop {
+  width: 240px;
+  height: 82px;
+  overflow: hidden;
+}
+
 .bpjs-logo-img {
-  width: 210px;
-  height: 68px;
-  object-fit: cover;
-  object-position: 0 34%;
+  width: 240px;
+  height: auto;
   display: block;
+  margin-top: -67px;
 }
 
 .bpjs-tagline {
