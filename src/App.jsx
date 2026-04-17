@@ -2237,8 +2237,9 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
   };
 
   const handleCheckout = async () => {
-    if (!formData.companyName || selectedPackages.length === 0) {
-      alert("Mohon isi Nama Perusahaan dan pilih minimal satu layanan.");
+    const totalNominalCheck = (formData.nomJKKJKM || 0) + (formData.nomJHT || 0) + (formData.nomJP || 0);
+    if (!formData.companyName || totalNominalCheck === 0) {
+      alert("Mohon isi Nama Perusahaan dan minimal satu nominal program.");
       return;
     }
 
