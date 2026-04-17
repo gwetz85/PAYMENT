@@ -905,23 +905,23 @@ input:focus {
 }
 
 /*
- * object-fit crop: PNG 1024x1024, displayed at 160x160px via cover.
- * height:42px → window = (160-42)=118px × 36% = 42px start → shows y:42-84px
- * This captures BPJS+Ketenagakerjaan and cuts off subtitle.
+ * object-fit crop: PNG 1024x1024, displayed at 210x210px via cover.
+ * height:55px → window = (210-55)=155px × 36% = 55.8px start → shows y:56-111px
+ * This captures BPJS+Ketenagakerjaan text and cuts off the subtitle.
  */
 .bpjs-logo-img {
-  width: 160px;
-  height: 42px;
+  width: 210px;
+  height: 55px;
   object-fit: cover;
   object-position: 0 36%;
   display: block;
 }
 
 .bpjs-tagline {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   color: #10b981;
-  margin-top: 2px;
+  margin-top: 3px;
   letter-spacing: 1.5px;
 }
 
