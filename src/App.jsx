@@ -2393,36 +2393,13 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
 const ElectronicBPJSReceipt = ({ ticket, onBack }) => {
   const handlePrint = () => window.print();
 
-  // Inline SVG Logo for BPJS Ketenagakerjaan (reliable, no external dependency)
-  const BPJSLogo = () => (
-    <div className="bpjs-logo-inline">
-      <svg viewBox="0 0 280 80" xmlns="http://www.w3.org/2000/svg" className="bpjs-svg-logo">
-        {/* Swoosh icon */}
-        <defs>
-          <linearGradient id="swooshGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{stopColor:'#1a8a5c', stopOpacity:1}} />
-            <stop offset="50%" style={{stopColor:'#2eaa7a', stopOpacity:1}} />
-            <stop offset="100%" style={{stopColor:'#8dc63f', stopOpacity:1}} />
-          </linearGradient>
-        </defs>
-        <path d="M5,55 C5,55 15,10 50,15 C50,15 20,20 18,50 C18,50 25,5 60,12 C60,12 30,25 30,55 C30,55 40,5 70,15 C70,15 45,25 42,55" 
-              stroke="url(#swooshGrad)" strokeWidth="3" fill="none" strokeLinecap="round"/>
-        <circle cx="55" cy="8" r="4" fill="#1a8a5c"/>
-        {/* BPJS Text */}
-        <text x="80" y="28" fontFamily="Arial, sans-serif" fontSize="26" fontWeight="900" fill="#1a5276">BPJS</text>
-        {/* Ketenagakerjaan Text */}
-        <text x="80" y="50" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="700" fill="#1a5276">Ketenagakerjaan</text>
-      </svg>
-    </div>
-  );
-
   return (
     <div className="modern-receipt-container fade-in">
       <div className="bpjs-kwitansi-box">
         {/* Header Section */}
         <div className="bpjs-header">
           <div className="bpjs-logo-container">
-            <BPJSLogo />
+            <img src="/bpjs-logo.png" alt="BPJS Ketenagakerjaan" className="bpjs-logo-img" />
             <div className="bpjs-tagline">BAHAGIA, SEJAHTERA</div>
           </div>
           <div className="bpjs-title-section">
