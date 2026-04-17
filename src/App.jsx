@@ -2393,10 +2393,15 @@ const BPJSTKTab = ({ packages, storeInfo }) => {
 const ElectronicBPJSReceipt = ({ ticket, onBack }) => {
   const handlePrint = () => window.print();
 
+  const totalAmount = (ticket.nomJKKJKM || 0) + (ticket.nomJHT || 0) + (ticket.nomJP || 0);
+  const terbilangText = terbilang(totalAmount);
+  const terbilangCapitalized = terbilangText.charAt(0).toUpperCase() + terbilangText.slice(1) + ' Rupiah';
+
   return (
     <div className="modern-receipt-container fade-in">
       <div className="bpjs-kwitansi-box">
-        {/* Header Section */}
+
+        {/* ── HEADER ── */}
         <div className="bpjs-header">
           <div className="bpjs-logo-container">
             <img src="/bpjs-logo.png" alt="BPJS Ketenagakerjaan" className="bpjs-logo-img" />
@@ -2407,67 +2412,86 @@ const ElectronicBPJSReceipt = ({ ticket, onBack }) => {
 
         <div className="bpjs-divider"></div>
 
-        {/* Content Section */}
+        {/* ── CONTENT FIELDS ── */}
         <div className="bpjs-content">
           <div className="bpjs-row">
-            <span className="bpjs-label" style={{fontWeight:800}}>No. Kwitansi</span>
+            <span className="bpjs-label">No. Kwitansi</span>
             <span className="bpjs-separator">:</span>
             <span className="bpjs-value-dotted">{ticket.noKwitansi || ticket.id}</span>
           </div>
           <div className="bpjs-row">
-            <span className="bpjs-label" style={{fontWeight:800}}>Tanggal</span>
+            <span className="bpjs-label">Tanggal</span>
             <span className="bpjs-separator">:</span>
             <span className="bpjs-value-dotted">{ticket.date}</span>
           </div>
-          
+
           <div className="bpjs-spacer"></div>
 
           <div className="bpjs-row">
-            <span className="bpjs-label" style={{fontWeight:800}}>Telah Terima Dari</span>
+            <span className="bpjs-label">Telah Terima Dari</span>
             <span className="bpjs-separator">:</span>
             <span className="bpjs-value-dotted full-width">{ticket.customerName}</span>
           </div>
           <div className="bpjs-row">
-            <span className="bpjs-label" style={{fontWeight:800}}>Alamat</span>
+            <span className="bpjs-label">Alamat</span>
             <span className="bpjs-separator">:</span>
             <span className="bpjs-value-dotted full-width">{ticket.address || ''}</span>
           </div>
-          
+
           <div className="bpjs-spacer"></div>
 
           <div className="bpjs-row">
-            <span className="bpjs-label" style={{fontWeight:800}}>Untuk Pembayaran</span>
+            <span className="bpjs-label">Untuk Pembayaran</span>
             <span className="bpjs-separator">:</span>
             <span className="bpjs-value-dotted full-width">{ticket.untukPembayaran || ticket.productName}</span>
           </div>
           <div className="bpjs-row">
-            <span className="bpjs-label" style={{fontWeight:800}}>Periode</span>
+            <span className="bpjs-label">Periode</span>
             <span className="bpjs-separator">:</span>
             <span className="bpjs-value-dotted full-width">{ticket.periode || ''}</span>
           </div>
         </div>
 
-        {/* Table Section */}
-        <div className="bpjs-table-container">
-          <table className="bpjs-table">
-            <tbody>
-              <tr>
-                <td className="bpjs-table-label">Program JKK & JKM</td>
-                <td className="bpjs-table-value">Rp {(ticket.nomJKKJKM || 0).toLocaleString('id-ID')}</td>
-              </tr>
-              <tr>
-                <td className="bpjs-table-label">Program JHT</td>
-                <td className="bpjs-table-value">Rp {(ticket.nomJHT || 0).toLocaleString('id-ID')}</td>
-              </tr>
-              <tr>
-                <td className="bpjs-table-label">Program JP</td>
-                <td className="bpjs-table-value">Rp {(ticket.nomJP || 0).toLocaleString('id-ID')}</td>
-              </tr>
-            </tbody>
-          </table>
+        {/* ── JUMLAH UANG ── */}
+        <div className="bpjs-amount-section">
+          <div className="bpjs-amount-row">
+            <span className="bpjs-amount-label">Jumlah Uang:</span>
+            <span className="bpjs-amount-value">Rp. {totalAmount.toLocaleString('id-ID')},-</span>
+            <span className="bpjs-amount-terbilang">({terbilangCapitalized})</span>
+          </div>
         </div>
 
-        {/* Footer Section */}
+        <div className="bpjs-divider" style={{marginTop: 12}}></div>
+
+        {/* ── TABLE + SIGNATURE ── */}
+        <div className="bpjs-bottom-section">
+          <div className="bpjs-table-left">
+            <table className="bpjs-table">
+              <tbody>
+                <tr>
+                  <td className="bpjs-table-label">Program JKK & JKM</td>
+                  <td className="bpjs-table-value">Rp. {(ticket.nomJKKJKM || 0).toLocaleString('id-ID')},-</td>
+                </tr>
+                <tr>
+                  <td className="bpjs-table-label">Program JHT</td>
+                  <td className="bpjs-table-value">Rp. {(ticket.nomJHT || 0).toLocaleString('id-ID')},-</td>
+                </tr>
+                <tr>
+                  <td className="bpjs-table-label">Program JP</td>
+                  <td className="bpjs-table-value">Rp. {(ticket.nomJP || 0).toLocaleString('id-ID')},-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="bpjs-signature-area">
+            <p className="bpjs-signature-date">{ticket.date}</p>
+            <p className="bpjs-signature-title">Petugas BPJS Ketenagakerjaan</p>
+            <div className="bpjs-signature-space"></div>
+            <p className="bpjs-signature-name">{ticket.storeInfo?.name || 'Petugas'}</p>
+          </div>
+        </div>
+
+        {/* ── FOOTER ── */}
         <div className="bpjs-footer">
           <div className="bpjs-footer-left">
             TERDAFTAR DI BPJS KETENAGAKERJAAN
@@ -2479,6 +2503,7 @@ const ElectronicBPJSReceipt = ({ ticket, onBack }) => {
             <div className="bpjs-pill">HIDUP TENANG DAN SEJAHTERA</div>
           </div>
         </div>
+
       </div>
 
       <div className="no-print" style={{ display: 'flex', gap: 12, marginTop: 32, justifyContent: 'center' }}>
