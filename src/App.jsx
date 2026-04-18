@@ -2456,7 +2456,7 @@ const ElectronicBPJSReceipt = ({ ticket, onBack }) => {
         {/* ── JUMLAH UANG ── */}
         <div className="bpjs-amount-section">
           <div className="bpjs-amount-row">
-            <span className="bpjs-amount-label">Jumlah Uang:</span>
+            <span className="bpjs-amount-label">Total Pembayaran:</span>
             <span className="bpjs-amount-value">Rp. {totalAmount.toLocaleString('id-ID')},-</span>
             <span className="bpjs-amount-terbilang">({terbilangCapitalized})</span>
           </div>
