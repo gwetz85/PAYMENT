@@ -2492,18 +2492,6 @@ const ElectronicBPJSReceipt = ({ ticket, onBack }) => {
           </div>
         </div>
 
-        {/* ── FOOTER ── */}
-        <div className="bpjs-footer">
-          <div className="bpjs-footer-left">
-            TERDAFTAR DI BPJS KETENAGAKERJAAN
-          </div>
-          <div className="bpjs-footer-center">
-            <span className="bpjs-footer-icon">📞</span> <em>Call Center</em> : 175 | www.bpjsketenagakerjam.go.id
-          </div>
-          <div className="bpjs-footer-right">
-            <div className="bpjs-pill">HIDUP TENANG DAN SEJAHTERA</div>
-          </div>
-        </div>
 
       </div>
 
