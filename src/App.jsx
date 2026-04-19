@@ -2485,10 +2485,6 @@ const ElectronicBPJSReceipt = ({ ticket, onBack }) => {
             </table>
           </div>
           <div className="bpjs-signature-area">
-            <p className="bpjs-signature-date">{ticket.date}</p>
-            <p className="bpjs-signature-title">Petugas BPJS Ketenagakerjaan</p>
-            <div className="bpjs-signature-space"></div>
-            <p className="bpjs-signature-name">{ticket.storeInfo?.name || 'Petugas'}</p>
           </div>
         </div>
 
